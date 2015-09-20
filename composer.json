@@ -1,15 +1,21 @@
 {
     "name": "seanmorris/access",
+    "authors": [
+        {
+            "name": "Sean Morris",
+            "email": "sean@sean-morris.com"
+        }
+    ],
     "require": {
         "seanmorris/ids": "dev-master"
     },
     "require-dev": {
         "simpletest/simpletest": "^1.1"
     },
-    "authors": [
-        {
-            "name": "Sean Morris",
-            "email": "sean@sean-morris.com"
+    "autoload": {
+        "psr-4": {
+            "SeanMorris\\Access\\Test\\": "test/",
+            "SeanMorris\\Access\\": "source/"
         }
-    ]
+    }
 }

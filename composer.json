@@ -13,7 +13,7 @@
         "psr-4": {
             "SeanMorris\\Access\\Test\\": "test/",
             "SeanMorris\\Access\\": "source/",
-            "seanMorris\\access\\": "source/"
+            "seanmorris\\access\\": "source/"
         }
     }
 }

@@ -6,16 +6,14 @@
             "email": "sean@sean-morris.com"
         }
     ],
-    "require": {
-        "seanmorris/ids": "dev-master"
-    },
     "require-dev": {
         "simpletest/simpletest": "^1.1"
     },
     "autoload": {
         "psr-4": {
             "SeanMorris\\Access\\Test\\": "test/",
-            "SeanMorris\\Access\\": "source/"
+            "SeanMorris\\Access\\": "source/",
+            "seanMorris\\access\\": "source/"
         }
     }
 }

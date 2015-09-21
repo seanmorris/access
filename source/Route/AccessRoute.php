@@ -3,7 +3,7 @@ namespace SeanMorris\Access\Route;
 class AccessRoute extends \SeanMorris\PressKit\Controller
 {
 	protected
-		$formTheme = 'SeanMorris\Theme\Form\Theme'
+		$formTheme = 'SeanMorris\Form\Theme\Form\Theme'
 		, $modelClass = 'SeanMorris\Access\User'
 		, $modelRoute = 'SeanMorris\PressKit\Route\ModelSubRoute'
 		, $access = [

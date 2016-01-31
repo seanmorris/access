@@ -5,10 +5,11 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 	protected
 		$formTheme = 'SeanMorris\Form\Theme\Form\Theme'
 		, $modelClass = 'SeanMorris\Access\User'
-		, $modelRoute = 'SeanMorris\PressKit\Route\ModelSubRoute'
 		, $access = [
 			'register' => TRUE
 			, 'login' => TRUE
+			, 'logout' => TRUE
+			, 'view' => TRUE
 		]
 	;
 	public
@@ -17,7 +18,9 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 		]
 	;
 	protected static
-		$menus = [
+		$titleField = 'username'
+		, $modelRoute = 'SeanMorris\PressKit\Route\ModelSubRoute'
+		, $menus = [
 			'main' => [
 				'Login' => [
 					'_link'		=> 'login'
@@ -55,6 +58,10 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 		$loginForm['username'] = [
 			'_title' => 'username'
 			, 'type' => 'text'
+			, '_validators' => [
+				'SeanMorris\Form\Validator\EmailValidator' => 
+					'%s must be a valid email.'
+			]
 		];
 
 		$loginForm['password'] = [
@@ -77,10 +84,11 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 
 		$loggedIn = false;
 
+		$messages = \SeanMorris\Message\MessageHandler::get();
+
 		if($_POST && $form->validate($_POST))
 		{
 			$user = \SeanMorris\Access\User::loadOneByUsername($_POST['username']);
-			$messages = \SeanMorris\Message\MessageHandler::get();
 
 			if($_POST['password'] !== $_POST['confirmPassword'])
 			{
@@ -96,6 +104,13 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 					$session =& \SeanMorris\Ids\Meta::staticSession(1);
 					$session['user'] = $user;
 				}
+			}
+		}
+		else if($errors = $form->errors())
+		{
+			foreach($errors as $error)
+			{
+				$messages->addFlash(new \SeanMorris\Message\ErrorMessage($error));
 			}
 		}
 

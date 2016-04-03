@@ -2,13 +2,16 @@
 namespace SeanMorris\Access\Route;
 class AccessRoute extends \SeanMorris\PressKit\Controller
 {
+	const CONFIRM_TOKEN_SECRET = 'ACCESS ROUTE SECRET HERE';
+
 	protected
-		$formTheme = 'SeanMorris\Form\Theme\Form\Theme'
+		$formTheme = 'SeanMorris\Form\Theme\Theme'
 		, $modelClass = 'SeanMorris\Access\User'
 		, $access = [
 			'register' => TRUE
 			, 'login' => TRUE
 			, 'logout' => TRUE
+			, 'confirm' => TRUE
 			, 'view' => TRUE
 		]
 	;
@@ -16,10 +19,12 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 		$alias = [
 			'index' => 'login'
 		]
+		, $title = 'Login'
 	;
 	protected static
 		$titleField = 'username'
 		, $modelRoute = 'SeanMorris\PressKit\Route\ModelSubRoute'
+		, $sessionStarted = FALSE
 		, $menus = [
 			'main' => [
 				'Login' => [
@@ -36,13 +41,46 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 		]
 	;
 
-	public function _init($router)
+	public static function _currentUser(\SeanMorris\Access\User $user = NULL)
 	{
 		$session =& \SeanMorris\Ids\Meta::staticSession(1);
+
+		if($user)
+		{
+			$session['user'] = $user;
+		}
 
 		if(!isset($session['user']))
 		{
 			$session['user'] = new \SeanMorris\Access\User;
+		}
+
+		return $session['user'];
+	}
+
+	public static function _resetCurrentUser()
+	{
+		$user = NULL;
+		$session =& \SeanMorris\Ids\Meta::staticSession(1);
+
+		if(isset($session['user']))
+		{
+			$user = $session['user'];
+		}
+
+		unset($session['user']);
+
+		return static::_currentUser();
+	}
+
+	public function _init($router)
+	{
+		if(!static::$sessionStarted)
+		{
+			static::$sessionStarted = TRUE;
+
+			session_start();
+			static::_currentUser();
 		}
 
 		parent::_init($router);
@@ -50,6 +88,8 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 
 	public function register($router)
 	{
+		$this->context['breadcrumbsSuffix']['Register'] = '';
+		
 		$this->context['title'] = 'Register';
 		$this->context['body'] = 'Register';
 
@@ -58,8 +98,13 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 		$loginForm['username'] = [
 			'_title' => 'username'
 			, 'type' => 'text'
+		];
+
+		$loginForm['email'] = [
+			'_title' => 'email address'
+			, 'type' => 'text'
 			, '_validators' => [
-				'SeanMorris\Form\Validator\EmailValidator' => 
+				'SeanMorris\Form\Validator\Email' => 
 					'%s must be a valid email.'
 			]
 		];
@@ -80,8 +125,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 		];
 
 		$form = new \SeanMorris\Form\Form($loginForm);
-		$session =& \SeanMorris\Ids\Meta::staticSession(1);
-
+		
 		$loggedIn = false;
 
 		$messages = \SeanMorris\Message\MessageHandler::get();
@@ -99,10 +143,46 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 				$user = new \SeanMorris\Access\User;
 				$user->consume($form->getValues());
 
-				if($user->save())
+				try
 				{
-					$session =& \SeanMorris\Ids\Meta::staticSession(1);
-					$session['user'] = $user;
+					if($user->save())
+					{
+						static::_currentUser($user);
+						$messages->addFlash(new \SeanMorris\Message\SuccessMessage('Registration successful.'));
+
+						$token = \SeanMorris\Ids\HashToken::getToken(
+							$user->username
+							, static::CONFIRM_TOKEN_SECRET
+							, 60*60*24*7
+							, 15
+						);
+
+						$confirmUrl = sprintf(
+							'http://newninja.dev/user/confirm/%s/%s'
+							, $user->publicId
+							, $token
+						);
+
+						$mail = new \SeanMorris\Ids\Mail();
+						$mail->to($user->email);
+						$mail->subject('Confirm your email.');
+						$mail->body($confirmUrl);
+						$mail->send();
+
+					}
+				}
+				catch(\Exception $e)
+				{
+					if($e->getCode() == 1062)
+					{
+						$messages->addFlash(new \SeanMorris\Message\ErrorMessage('Username taken.'));
+					}
+					else
+					{
+						$messages->addFlash(new \SeanMorris\Message\ErrorMessage('Unknown error.'));
+
+						\SeanMorris\Ids\Log::debug($e);
+					}
 				}
 			}
 		}
@@ -116,11 +196,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 
 		$formTheme = $this->formTheme;
 		
-		return $form->render($formTheme) . (
-			'<pre>'
-			. print_r($_SESSION, 1)
-			. '</pre>'
-		);
+		return $form->render($formTheme);
 	}
 
 	public function logout()
@@ -142,6 +218,9 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 
 	public function login($router)
 	{
+		$this->context['_router'] = $router;
+		$this->context['_controller'] = $this;
+
 		$this->context['title'] = 'Login';
 		$this->context['body'] = 'Login';
 
@@ -163,8 +242,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 		];
 
 		$form = new \SeanMorris\Form\Form($loginForm);
-		$session =& \SeanMorris\Ids\Meta::staticSession(1);
-
+		
 		$loggedIn = false;
 
 		if($_POST && $form->validate($_POST))
@@ -177,7 +255,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 				if($user->login($_POST['password']))
 				{
 					$loggedIn = true;
-					$session['user'] = $user;
+					static::_currentUser($user);
 				}
 			}
 			else
@@ -198,40 +276,104 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 			}
 			else
 			{
-				unset($session['user']);
+				static::_resetCurrentUser($user);
 				$messages->addFlash(new \SeanMorris\Message\ErrorMessage('Bad username/password.'));
 			}
-
-
 
 			throw new \SeanMorris\Ids\Http\Http303($redirect);
 		}
 
 		$formTheme = $this->formTheme;
 		
-		return $form->render($formTheme) . (
-			'<pre>'
-			. print_r($_SESSION, 1)
-			. '</pre>'
+		return $form->render($formTheme);
+	}
+
+	public function confirm($router)
+	{
+		$path = $router->path();
+
+		if(!$userId = $path->consumeNode())
+		{
+			\SeanMorris\Ids\Log::debug('No user id found.');
+			return FALSE;
+		}
+
+		if(!$user = \SeanMorris\Access\User::loadOneByPublicId($userId))
+		{
+			\SeanMorris\Ids\Log::debug('No user found.');
+			return FALSE;
+		}
+
+		$token = implode(
+			'/'
+			, $tokenParts = array_filter([
+				$path->consumeNode()
+				, $path->consumeNode()
+				, $path->consumeNode()
+				, $path->consumeNode()
+			])
 		);
+
+		if(count($tokenParts) !== 4)
+		{
+			\SeanMorris\Ids\Log::debug('No token found.');
+			return false;
+		}
+
+		if(\SeanMorris\Ids\HashToken::checkToken($token, $user->username, static::CONFIRM_TOKEN_SECRET))
+		{
+			\SeanMorris\Ids\Log::debug('Token VALID.');
+
+			$verifiedRole = '\SeanMorris\Access\Role\User';
+
+			if(0 && $user->hasRole($verifiedRole))
+			{
+				return FALSE;
+			}
+
+			$role = new $verifiedRole();
+			$role->save();
+
+			$user->addSubject('roles', $role);
+			$user->save();
+			
+			if($user->hasRole($verifiedRole))
+			{
+				$messages = \SeanMorris\Message\MessageHandler::get();
+
+				$messages->addFlash(
+					new \SeanMorris\Message\SuccessMessage('Email verified.')
+				);
+
+				throw new \SeanMorris\Ids\Http\Http303('');
+			}
+		}
+		else
+		{
+			\SeanMorris\Ids\Log::debug('Token NOT VALID.');
+
+			return FALSE;
+		}
+
+		return 'LOL!';
 	}
 
 	public function _menu(\SeanMorris\Ids\Router $router, $path, \SeanMorris\Ids\Routable $routable = NULL)
 	{
-		$session =& \SeanMorris\Ids\Meta::staticSession(1);
-
-		if(isset($session['user']) && $session['user']->id)
+		$user = static::_currentUser();
+		
+		if($user->id)
 		{
 			static::$menus['main'] = [
 				'username' => [
 					'_weight' => 101
-					, '_link'	=> $session['user']->publicId
-					, '_title'	=> $session['user']->username
+					, '_link'	=> $user->publicId
+					, '_title'	=> $user->username
 					, 'Profile' => [
-						'_link'		=> $session['user']->publicId
+						'_link' => $user->publicId
 					]
 					, 'Logout' => [
-						'_link'		=> 'logout?page=' . $router->request()->uri()
+						'_link' => 'logout?page=' . $router->request()->uri()
 					]
 
 				]
@@ -247,5 +389,38 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 		}
 
 		return parent::_menu($router, $path);
+	}
+
+	public static function _loginLink($router)
+	{
+		while($router->subRouted())
+		{
+			$router = $router->parent();
+		}
+
+		return $router->root()->routes()->_pathTo(get_called_class())
+			. '/login?page=' . $router->request()->uri();
+	}
+
+	public static function _logoutLink($router)
+	{
+		while($router->subRouted())
+		{
+			$router = $router->parent();
+		}
+
+		return $router->root()->routes()->_pathTo(get_called_class())
+			. '/logout?page=' . $router->request()->uri();
+	}
+
+	public static function _registerLink($router)
+	{
+		while($router->subRouted())
+		{
+			$router = $router->parent();
+		}
+
+		return $router->root()->routes()->_pathTo(get_called_class())
+			. '/register?page=' . $router->request()->uri();
 	}
 }

@@ -1,6 +1,6 @@
 <?php
 namespace SeanMorris\Access;
-class Role extends \SeanMorris\Ids\Model
+class Role extends \SeanMorris\PressKit\Model
 {
 	protected
 		$id

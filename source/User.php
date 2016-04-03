@@ -1,12 +1,13 @@
 <?php
 namespace SeanMorris\Access;
-class User extends \SeanMorris\Ids\Model
+class User extends \SeanMorris\PressKit\Model
 {
 	protected
 		$id
 		, $publicId
 		, $created
 		, $username
+		, $email
 		, $password
 		, $roles
 	;

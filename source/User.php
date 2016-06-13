@@ -9,11 +9,17 @@ class User extends \SeanMorris\PressKit\Model
 		, $username
 		, $email
 		, $password
+		, $avatar
 		, $roles
+		, $state
 	;
 
 	protected static
 		$table = 'user'
+		, $hasOne = [
+			'avatar' => 'SeanMorris\PressKit\Image'
+			, 'state' => 'SeanMorris\Access\State\UserState'
+		]
 		, $hasMany = [
 			'roles' => 'SeanMorris\Access\Role'
 		]
@@ -45,8 +51,22 @@ class User extends \SeanMorris\PressKit\Model
 		return $passwordHasher->CheckPassword($password, $this->password);
 	}
 
+
+	public function register($username, $password, $email)
+	{
+		$this->username = $username;
+		$this->email    = $email;
+
+		$passwordHasher = new \Hautelook\Phpass\PasswordHash(8, FALSE);
+
+		$this->password = $passwordHasher->HashPassword($password);
+
+		return $this->create();
+	}
+
 	protected static function beforeConsume($instance, &$skeleton)
 	{
+		/*
 		if(!isset($skeleton['password']) || !$skeleton['password'])
 		{
 			$skeleton['password'] = $instance->password;
@@ -57,6 +77,7 @@ class User extends \SeanMorris\PressKit\Model
 
 			$skeleton['password'] = $passwordHasher->HashPassword($skeleton['password']);
 		}
+		*/
 	}
 
 	public function hasRole($checkRole)
@@ -77,5 +98,38 @@ class User extends \SeanMorris\PressKit\Model
 		}
 
 		return false;
+	}
+
+	public function isSame($user)
+	{
+		return $user->id == $this->id;
+	}
+
+	protected function ensureState()
+	{
+		if(isset(static::$hasOne['state'])
+			&& static::$hasOne['state']
+			&& !$this->state
+			&& $owner = \SeanMorris\Access\Route\AccessRoute::_currentUser()
+		){
+			\SeanMorris\Ids\Log::debug(
+				'Creating new state '
+				. static::$hasOne['state']
+				. ' for '
+				. get_class($this)
+			);
+			$stateClass = static::$hasOne['state'];
+			$state = new $stateClass;
+			$state->consume([
+				'owner' => $owner->id
+			]);
+			$state->save();
+			$this->state = $state->id;
+			$this->id && $this->forceSave();
+
+			return $state;
+		}	
+
+		return $this->state;
 	}
 }

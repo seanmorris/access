@@ -6,6 +6,9 @@
             "email": "sean@sean-morris.com"
         }
     ],
+    "require" : {
+        "hautelook/phpass": "^1.0"
+    },
     "require-dev": {
         "simpletest/simpletest": "^1.1"
     },

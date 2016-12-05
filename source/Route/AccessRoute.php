@@ -19,12 +19,13 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 		$alias = [
 			'index' => 'login'
 		]
-		, $title = 'Login'
+		, $title = 'Users'
 	;
 	protected static
 		$titleField = 'username'
 		, $modelRoute = 'SeanMorris\PressKit\Route\ModelSubRoute'
 		, $sessionStarted = FALSE
+		, $userLoaded = FALSE
 		, $menus = [
 			'main' => [
 				'Login' => [
@@ -53,6 +54,16 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 		if(!isset($session['user']))
 		{
 			$session['user'] = new \SeanMorris\Access\User;
+		}
+
+		if(!static::$userLoaded)
+		{
+			if(isset($session['user']->id))
+			{
+				$session['user'] = \SeanMorris\Access\User::loadOneById($session['user']->id);
+			}
+
+			static::$userLoaded = TRUE;
 		}
 
 		return $session['user'];
@@ -89,7 +100,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 	public function register($router)
 	{
 		$this->context['breadcrumbsSuffix']['Register'] = '';
-		
+
 		$this->context['title'] = 'Register';
 		$this->context['body'] = 'Register';
 
@@ -104,7 +115,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 			'_title' => 'email address'
 			, 'type' => 'text'
 			, '_validators' => [
-				'SeanMorris\Form\Validator\Email' => 
+				'SeanMorris\Form\Validator\Email' =>
 					'%s must be a valid email.'
 			]
 		];
@@ -125,7 +136,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 		];
 
 		$form = new \SeanMorris\Form\Form($loginForm);
-		
+
 		$loggedIn = false;
 
 		$messages = \SeanMorris\Message\MessageHandler::get();
@@ -140,48 +151,57 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 			}
 			else
 			{
-				$user = new \SeanMorris\Access\User;
-				$user->consume($form->getValues());
+				//$user = new \SeanMorris\Access\User;
+				$user = static::_currentUser();
 
-				try
+				if($user->id)
 				{
-					if($user->save())
-					{
-						static::_currentUser($user);
-						$messages->addFlash(new \SeanMorris\Message\SuccessMessage('Registration successful.'));
-
-						$token = \SeanMorris\Ids\HashToken::getToken(
-							$user->username
-							, static::CONFIRM_TOKEN_SECRET
-							, 60*60*24*7
-							, 15
-						);
-
-						$confirmUrl = sprintf(
-							'http://newninja.dev/user/confirm/%s/%s'
-							, $user->publicId
-							, $token
-						);
-
-						$mail = new \SeanMorris\Ids\Mail();
-						$mail->to($user->email);
-						$mail->subject('Confirm your email.');
-						$mail->body($confirmUrl);
-						$mail->send();
-
-					}
+					$messages->addFlash(new \SeanMorris\Message\ErrorMessage('Password much match confirmation.'));
 				}
-				catch(\Exception $e)
+				else
 				{
-					if($e->getCode() == 1062)
-					{
-						$messages->addFlash(new \SeanMorris\Message\ErrorMessage('Username taken.'));
-					}
-					else
-					{
-						$messages->addFlash(new \SeanMorris\Message\ErrorMessage('Unknown error.'));
+					$user->consume($form->getValues());
 
-						\SeanMorris\Ids\Log::debug($e);
+					try
+					{
+						if($user->save())
+						{
+							static::_currentUser($user);
+							$messages->addFlash(new \SeanMorris\Message\SuccessMessage('Registration successful.'));
+
+							$token = \SeanMorris\Ids\HashToken::getToken(
+								$user->username
+								, static::CONFIRM_TOKEN_SECRET
+								, 60*60*24*7
+								, 15
+							);
+
+							$confirmUrl = sprintf(
+								'http://newninja.dev/user/confirm/%s/%s'
+								, $user->publicId
+								, $token
+							);
+
+							$mail = new \SeanMorris\Ids\Mail();
+							$mail->to($user->email);
+							$mail->subject('Confirm your email.');
+							$mail->body($confirmUrl);
+							$mail->send();
+
+						}
+					}
+					catch(\Exception $e)
+					{
+						if($e->getCode() == 1062)
+						{
+							$messages->addFlash(new \SeanMorris\Message\ErrorMessage('Username taken.'));
+						}
+						else
+						{
+							$messages->addFlash(new \SeanMorris\Message\ErrorMessage('Unknown error.'));
+
+							\SeanMorris\Ids\Log::debug($e);
+						}
 					}
 				}
 			}
@@ -195,14 +215,14 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 		}
 
 		$formTheme = $this->formTheme;
-		
+
 		return $form->render($formTheme);
 	}
 
 	public function logout()
 	{
 		session_destroy();
-		
+
 		$redirect = '';
 
 		$messages = \SeanMorris\Message\MessageHandler::get();
@@ -242,50 +262,51 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 		];
 
 		$form = new \SeanMorris\Form\Form($loginForm);
-		
 		$loggedIn = false;
+		$currentUri = $router->request()->uri();
+		$statusCode = 200;
 
 		if($_POST && $form->validate($_POST))
 		{
 			$user = \SeanMorris\Access\User::loadOneByUsername($_POST['username']);
 			$messages = \SeanMorris\Message\MessageHandler::get();
-			
+
 			if($user)
 			{
 				if($user->login($_POST['password']))
 				{
-					$loggedIn = true;
 					static::_currentUser($user);
+
+					$redirect = $currentUri;
+
+					if(isset($_GET['page']))
+					{
+						$redirect = parse_url($_GET['page'], PHP_URL_PATH);
+					}
+
+					$messages->addFlash(new \SeanMorris\Message\SuccessMessage('Logged in.'));
+
+					throw new \SeanMorris\Ids\Http\Http303($redirect);
 				}
 			}
-			else
-			{
-				return 'User not found';
-			}
 
-			$redirect = $router->request()->uri();
+			static::_resetCurrentUser($user);
+				
+			$messages->addFlash(new \SeanMorris\Message\ErrorMessage('Bad username/password.'));
 
-			if($loggedIn)
-			{
-				if(isset($_GET['page']))
-				{
-					$redirect = parse_url($_GET['page'], PHP_URL_PATH);
-				}
+			$statusCode = 400;
+		}
 
-				$messages->addFlash(new \SeanMorris\Message\SuccessMessage('Logged in.'));
-			}
-			else
-			{
-				static::_resetCurrentUser($user);
-				$messages->addFlash(new \SeanMorris\Message\ErrorMessage('Bad username/password.'));
-			}
+		$user = static::_currentUser();
 
-			throw new \SeanMorris\Ids\Http\Http303($redirect);
+		if($user->publicId)
+		{
+			throw new \SeanMorris\Ids\Http\Http303($currentUri . '/' . $user->publicId);
 		}
 
 		$formTheme = $this->formTheme;
 		
-		return $form->render($formTheme);
+		return new \SeanMorris\Ids\Http\HttpResponse($form->render($formTheme), $statusCode);
 	}
 
 	public function confirm($router)
@@ -336,7 +357,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 
 			$user->addSubject('roles', $role);
 			$user->save();
-			
+
 			if($user->hasRole($verifiedRole))
 			{
 				$messages = \SeanMorris\Message\MessageHandler::get();
@@ -361,7 +382,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 	public function _menu(\SeanMorris\Ids\Router $router, $path, \SeanMorris\Ids\Routable $routable = NULL)
 	{
 		$user = static::_currentUser();
-		
+
 		if($user->id)
 		{
 			static::$menus['main'] = [

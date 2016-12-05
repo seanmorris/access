@@ -50,7 +50,11 @@ class RoleRoute extends \SeanMorris\PressKit\Controller
 
 		if(isset($params['api']))
 		{
-			echo json_encode($roles);
+			$resource = new \SeanMorris\PressKit\Api\Resource(
+				$router
+				, ['body' => $roles]
+			);
+			echo $resource->toJson();
 			die;
 		}
 
@@ -79,7 +83,7 @@ class RoleRoute extends \SeanMorris\PressKit\Controller
 						? 'YES'
 						: 'NO'
 				);
-			}	
+			}
 		}
 
 		//var_dump($session, $user);

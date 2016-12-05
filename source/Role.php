@@ -10,7 +10,7 @@ class Role extends \SeanMorris\PressKit\Model
 		, $grantedBy
 	;
 	protected static
-		$table = 'Role'
+		$table = 'AccessRole'
 		, $createColumns = [
 			'assigned' => 'UNIX_TIMESTAMP()'
 			, 'publicId' => 'UNHEX(REPLACE(UUID(), "-", ""))'

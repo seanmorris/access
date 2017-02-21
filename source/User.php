@@ -25,14 +25,14 @@ class User extends \SeanMorris\PressKit\Model
 		]
 		, $createColumns = [
 			'publicId' => 'UNHEX(REPLACE(UUID(), "-", ""))'
-			, 'created' => 'UNIX_TIMESTAMP()'
+			, 'created' => 'NOW()'
+			, 'role' => '0'
 		]
 		, $readColumns = [
 			'publicId' => 'HEX(%s)'
 		]
 		, $updateColumns = [
 			'publicId' => 'UNHEX(%s)'
-			, 'edited' => 'UNIX_TIMESTAMP()'
 		]
 		, $byPublicId = [
 			'where' => [['publicId' => 'UNHEX(?)']]
@@ -107,6 +107,11 @@ class User extends \SeanMorris\PressKit\Model
 
 	protected function ensureState()
 	{
+		if(!$this->id)
+		{
+			//return;
+		}
+		
 		$state = parent::ensureState();
 
 		if($state && !$this->id)

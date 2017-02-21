@@ -200,7 +200,8 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 						{
 							$messages->addFlash(new \SeanMorris\Message\ErrorMessage('Unknown error.'));
 
-							\SeanMorris\Ids\Log::debug($e);
+							\SeanMorris\Ids\Log::logException($e);
+							die;
 						}
 					}
 				}

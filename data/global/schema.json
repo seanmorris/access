@@ -221,6 +221,146 @@
                     }
                 }
             }
+        },
+        "2": {
+            "AccessRole": {
+                "fields": {
+                    "class": {
+                        "Field": "class",
+                        "Type": "varchar(255)",
+                        "Collation": "latin1_swedish_ci",
+                        "Null": "NO",
+                        "Key": "",
+                        "Default": null,
+                        "Extra": "",
+                        "Comment": ""
+                    },
+                    "grantedBy": {
+                        "Field": "grantedBy",
+                        "Type": "int(11)",
+                        "Collation": null,
+                        "Null": "NO",
+                        "Key": "",
+                        "Default": null,
+                        "Extra": "",
+                        "Comment": ""
+                    }
+                }
+            },
+            "AccessUser": {
+                "fields": {
+                    "publicId": {
+                        "Field": "publicId",
+                        "Type": "binary(16)",
+                        "Collation": null,
+                        "Null": "NO",
+                        "Key": "UNI",
+                        "Default": null,
+                        "Extra": "",
+                        "Comment": ""
+                    },
+                    "created": {
+                        "Field": "created",
+                        "Type": "datetime",
+                        "Collation": null,
+                        "Null": "YES",
+                        "Key": "",
+                        "Default": null,
+                        "Extra": "",
+                        "Comment": ""
+                    },
+                    "username": {
+                        "Field": "username",
+                        "Type": "varchar(64)",
+                        "Collation": "latin1_swedish_ci",
+                        "Null": "NO",
+                        "Key": "UNI",
+                        "Default": null,
+                        "Extra": "",
+                        "Comment": ""
+                    },
+                    "email": {
+                        "Field": "email",
+                        "Type": "varchar(255)",
+                        "Collation": "latin1_swedish_ci",
+                        "Null": "NO",
+                        "Key": "UNI",
+                        "Default": null,
+                        "Extra": "",
+                        "Comment": ""
+                    },
+                    "password": {
+                        "Field": "password",
+                        "Type": "varchar(1024)",
+                        "Collation": "latin1_swedish_ci",
+                        "Null": "NO",
+                        "Key": "",
+                        "Default": null,
+                        "Extra": "",
+                        "Comment": ""
+                    },
+                    "role": {
+                        "Field": "role",
+                        "Type": "int(11)",
+                        "Collation": null,
+                        "Null": "NO",
+                        "Key": "",
+                        "Default": null,
+                        "Extra": "",
+                        "Comment": ""
+                    }
+                },
+                "keys": {
+                    "username": {
+                        "1": {
+                            "Table": "AccessUser",
+                            "Non_unique": "0",
+                            "Key_name": "username",
+                            "Seq_in_index": "1",
+                            "Column_name": "username",
+                            "Collation": "A",
+                            "Sub_part": null,
+                            "Packed": null,
+                            "Null": "",
+                            "Index_type": "BTREE",
+                            "Comment": "",
+                            "Index_comment": ""
+                        }
+                    },
+                    "public_id": {
+                        "1": {
+                            "Table": "AccessUser",
+                            "Non_unique": "0",
+                            "Key_name": "public_id",
+                            "Seq_in_index": "1",
+                            "Column_name": "publicId",
+                            "Collation": "A",
+                            "Sub_part": null,
+                            "Packed": null,
+                            "Null": "",
+                            "Index_type": "BTREE",
+                            "Comment": "",
+                            "Index_comment": ""
+                        }
+                    },
+                    "email": {
+                        "1": {
+                            "Table": "AccessUser",
+                            "Non_unique": "0",
+                            "Key_name": "email",
+                            "Seq_in_index": "1",
+                            "Column_name": "email",
+                            "Collation": "A",
+                            "Sub_part": null,
+                            "Packed": null,
+                            "Null": "",
+                            "Index_type": "BTREE",
+                            "Comment": "",
+                            "Index_comment": ""
+                        }
+                    }
+                }
+            }
         }
     }
 }

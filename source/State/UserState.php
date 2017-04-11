@@ -17,6 +17,10 @@ class UserState extends \SeanMorris\PressKit\State
 				'write'  => [FALSE, 'SeanMorris\Access\Role\Administrator']
 				, 'read' => TRUE
 			]
+			, '$fbid'   	=> [
+				'write'  => [TRUE, 'SeanMorris\Access\Role\Administrator']
+				, 'read' => TRUE
+			]
 			, '$username'	=> [
 				'write'  => TRUE
 				, 'read' => TRUE
@@ -54,6 +58,10 @@ class UserState extends \SeanMorris\PressKit\State
 			]
 			, '$created'	=> [
 				'write'  => [FALSE, 'SeanMorris\Access\Role\Administrator']
+				, 'read' => TRUE
+			]
+			, '$fbid'   	=> [
+				'write'  => [TRUE, 'SeanMorris\Access\Role\Administrator']
 				, 'read' => TRUE
 			]
 			, '$username'	=> [

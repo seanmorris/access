@@ -13,6 +13,14 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 			, 'logout' => TRUE
 			, 'confirm' => TRUE
 			, 'view' => TRUE
+			, 'linkFb' => TRUE
+
+			, 'view' => TRUE
+			, 'edit' => 'SeanMorris\Access\Role\Administrator'
+			, 'create' => 'SeanMorris\Access\Role\Administrator'
+			, 'delete' => 'SeanMorris\Access\Role\Administrator'
+			, '_contextMenu' => 'SeanMorris\Access\Role\Administrator'
+			, 'index' => TRUE
 		]
 	;
 	public
@@ -30,13 +38,13 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 			'main' => [
 				'Login' => [
 					'_link'		=> 'login'
-					, 'Login' => [
-						'_link'		=> 'login'
-					]
-					, 'Register' => [
-						'_link'		=> 'register'
-					]
+					, '_weight' => 100
+					, '_attrs' => ['data-no-instant' => 'data-no-instant']
+				]	
+				, 'Register' => [
+					'_link'		=> 'register'
 					, '_weight' => 101
+					, '_attrs' => ['data-no-instant' => 'data-no-instant']
 				]
 			]
 		]
@@ -86,15 +94,15 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 
 	public function _init($router)
 	{
+		parent::_init($router);
+
 		if(!static::$sessionStarted)
 		{
 			static::$sessionStarted = TRUE;
 
 			session_start();
-			static::_currentUser();
+			$this->context['user'] = static::_currentUser();
 		}
-
-		parent::_init($router);
 	}
 
 	public function register($router)
@@ -262,6 +270,12 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 			'type' => 'submit',
 		];
 
+		$loginForm['facebook'] = [
+			'type' => 'html'
+			//, 'value' => '<br /><br /><div class="fb-login-button" data-max-rows="1" data-size="medium" data-show-faces="false" data-auto-logout-link="false"></div>'
+			, 'value' => '<br /><br /><a href = "#" class = "fbLogin">FB!</a>'
+		];
+
 		$form = new \SeanMorris\Form\Form($loginForm);
 		$loggedIn = false;
 		$currentUri = $router->request()->uri();
@@ -394,19 +408,17 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 					, 'Profile' => [
 						'_link' => $user->publicId
 					]
-					, 'Logout' => [
-						'_link' => 'logout?page=' . $router->request()->uri()
-					]
-
+				]
+				, 'Logout' => [
+					'_weight' => 102
+					, '_link'    => 'logout?page=' . $router->request()->uri()
+					, '_attrs' => ['data-no-instant' => 'data-no-instant']
 				]
 			];
 		}
 		else
 		{
 			static::$menus['main']['Login']['_link']
-				.= '?page=' . $router->request()->uri();
-
-			static::$menus['main']['Login']['Login']['_link']
 				.= '?page=' . $router->request()->uri();
 		}
 
@@ -444,5 +456,19 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 
 		return $router->root()->routes()->_pathTo(get_called_class())
 			. '/register?page=' . $router->request()->uri();
+	}
+
+	public function linkFb()
+	{
+		if($user = static::_currentUser())
+		{
+			if($_POST)
+			{
+				var_dump($_POST);
+			}
+			$user->fbid = 'LOL!';
+			$user->save();
+		}
+		return 'LOL!';
 	}
 }

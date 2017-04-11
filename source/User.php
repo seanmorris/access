@@ -6,6 +6,7 @@ class User extends \SeanMorris\PressKit\Model
 		$id
 		, $publicId
 		, $created
+		//, $fbid
 		, $username
 		, $email
 		, $password
@@ -80,8 +81,14 @@ class User extends \SeanMorris\PressKit\Model
 	{
 		static $roles;
 
-		if ($this->id == 1) {
+		if($this->id == 1)
+		{
 			return true;
+		}
+
+		if($this->id && $checkRole == 'SeanMorris\Access\Role\User')
+		{
+			return true;	
 		}
 
 		if(!$roles)

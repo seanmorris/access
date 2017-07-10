@@ -86,12 +86,9 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 
 	public function _init($router)
 	{
-		if(!static::$sessionStarted)
+		if(session_status() === PHP_SESSION_NONE)
 		{
-			static::$sessionStarted = TRUE;
-
 			session_start();
-			static::_currentUser();
 		}
 
 		parent::_init($router);

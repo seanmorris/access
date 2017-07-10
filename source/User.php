@@ -6,6 +6,7 @@ class User extends \SeanMorris\PressKit\Model
 		$id
 		, $publicId
 		, $created
+		//, $fbid
 		, $username
 		, $email
 		, $password
@@ -25,14 +26,14 @@ class User extends \SeanMorris\PressKit\Model
 		]
 		, $createColumns = [
 			'publicId' => 'UNHEX(REPLACE(UUID(), "-", ""))'
-			, 'created' => 'UNIX_TIMESTAMP()'
+			, 'created' => 'NOW()'
+			, 'role' => '0'
 		]
 		, $readColumns = [
 			'publicId' => 'HEX(%s)'
 		]
 		, $updateColumns = [
 			'publicId' => 'UNHEX(%s)'
-			, 'edited' => 'UNIX_TIMESTAMP()'
 		]
 		, $byPublicId = [
 			'where' => [['publicId' => 'UNHEX(?)']]
@@ -80,8 +81,14 @@ class User extends \SeanMorris\PressKit\Model
 	{
 		static $roles;
 
-		if ($this->id == 1) {
+		if($this->id == 1)
+		{
 			return true;
+		}
+
+		if($this->id && $checkRole == 'SeanMorris\Access\Role\User')
+		{
+			return true;	
 		}
 
 		if(!$roles)
@@ -107,6 +114,11 @@ class User extends \SeanMorris\PressKit\Model
 
 	protected function ensureState()
 	{
+		if(!$this->id)
+		{
+			//return;
+		}
+		
 		$state = parent::ensureState();
 
 		if($state && !$this->id)

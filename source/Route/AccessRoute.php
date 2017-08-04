@@ -112,6 +112,25 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 
 		$loginForm['_method'] = 'POST';
 
+		
+		if($facebookLoginUrl = static::facebookLink($router))
+		{
+			$loginForm['facebook'] = [
+				'type' => 'html'
+				//, 'value' => '<br /><br /><div class="fb-login-button" data-max-rows="1" data-size="medium" data-show-faces="false" data-auto-logout-link="false"></div>'
+				, 'value' => sprintf(
+					'<a href = "%s" class = "fbLogin">
+						<img src = "/SeanMorris/TheWhtRbt/images/facebook_login.png" style = "width:100%%;">
+					</a><br />
+
+					- OR -
+
+					<br />'
+					, $facebookLoginUrl
+				)
+			];
+		}
+
 		$loginForm['username'] = [
 			'_title' => 'username'
 			, 'type' => 'text'

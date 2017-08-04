@@ -13,7 +13,8 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 			, 'logout' => TRUE
 			, 'confirm' => TRUE
 			, 'view' => TRUE
-			, 'linkFb' => TRUE
+			, 'facebookConnect' => TRUE
+			, 'facebookProfile' => TRUE
 
 			, 'view' => TRUE
 			, 'edit' => 'SeanMorris\Access\Role\Administrator'
@@ -161,7 +162,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 
 				if($user->id)
 				{
-					$messages->addFlash(new \SeanMorris\Message\ErrorMessage('Password much match confirmation.'));
+					$messages->addFlash(new \SeanMorris\Message\ErrorMessage('User already exists.'));
 				}
 				else
 				{
@@ -182,7 +183,8 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 							);
 
 							$confirmUrl = sprintf(
-								'http://newninja.dev/user/confirm/%s/%s'
+								'//%s/user/confirm/%s/%s'
+								, $router->request()->host()
 								, $user->publicId
 								, $token
 							);
@@ -252,6 +254,24 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 
 		$loginForm['_method'] = 'POST';
 
+		if($facebookLoginUrl = static::facebookLink($router))
+		{
+			$loginForm['facebook'] = [
+				'type' => 'html'
+				//, 'value' => '<br /><br /><div class="fb-login-button" data-max-rows="1" data-size="medium" data-show-faces="false" data-auto-logout-link="false"></div>'
+				, 'value' => sprintf(
+					'<a href = "%s" class = "fbLogin">
+						<img src = "/SeanMorris/TheWhtRbt/images/facebook_login.png" style = "width:100%%;">
+					</a><br />
+
+					- OR -
+
+					<br />'
+					, $facebookLoginUrl
+				)
+			];
+		}
+
 		$loginForm['username'] = [
 			'_title' => 'username'
 			, 'type' => 'text'
@@ -265,12 +285,6 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 		$loginForm['submit'] = [
 			'_title' => 'Submit',
 			'type' => 'submit',
-		];
-
-		$loginForm['facebook'] = [
-			'type' => 'html'
-			//, 'value' => '<br /><br /><div class="fb-login-button" data-max-rows="1" data-size="medium" data-show-faces="false" data-auto-logout-link="false"></div>'
-			, 'value' => '<br /><br /><a href = "#" class = "fbLogin">FB!</a>'
 		];
 
 		$form = new \SeanMorris\Form\Form($loginForm);
@@ -391,6 +405,129 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 		return 'LOL!';
 	}
 
+	protected static function facebook()
+	{
+		$session =& \SeanMorris\Ids\Meta::staticSession(1);
+
+		$facebookAppSettings = \SeanMorris\Ids\Settings::read('facebookApp');
+
+		if(!isset(
+			$facebookAppSettings
+			, $facebookAppSettings->id
+			, $facebookAppSettings->secret
+			, $facebookAppSettings->apiVersion
+		)){
+			return;
+		}
+
+		return new \Facebook\Facebook([
+			'app_id'                => $facebookAppSettings->id,
+			'app_secret'            => $facebookAppSettings->secret,
+			'default_graph_version' => $facebookAppSettings->apiVersion,
+		]);
+	}
+
+	protected static function facebookLink($router)
+	{
+		$session =& \SeanMorris\Ids\Meta::staticSession(1);
+
+		$facebook = static::facebook();
+
+		$helper = $facebook->getRedirectLoginHelper();
+
+		$permissions = ['email'];
+
+		$callbackUrl = $router->request()->scheme()
+			. $router->request()->host()
+			. '/user/facebookConnect'
+		;
+
+		return $helper->getLoginUrl($callbackUrl, $permissions);
+	}
+
+	public function facebookConnect()
+	{
+		$session     =& \SeanMorris\Ids\Meta::staticSession(1);
+		$facebook    = static::facebook();
+		$helper      = $facebook->getRedirectLoginHelper();
+		$accessToken = $helper->getAccessToken();
+
+		if(!isset($accessToken))
+		{
+			if($error = $helper->getError())
+			{
+				\SeanMorris\Ids\Log::error('Facebook error', $error);
+			}
+			return FALSE;
+		}
+
+		$oAuth2Client = $facebook->getOAuth2Client();
+		$tokenMetadata = $oAuth2Client->debugToken($accessToken->getValue());
+
+		$facebookAppSettings = \SeanMorris\Ids\Settings::read('facebookApp');
+
+		$tokenMetadata->validateAppId($facebookAppSettings->id);
+
+		$tokenMetadata->validateExpiration();
+
+		if (!$accessToken->isLongLived())
+		{
+			$accessToken = $oAuth2Client->getLongLivedAccessToken($accessToken);
+		}
+
+		$session['facebookAccessToken'] = (string) $accessToken;
+
+		throw new \SeanMorris\Ids\Http\Http303('user/facebookProfile');
+	}
+
+	public function facebookProfile()
+	{
+		$messages = \SeanMorris\Message\MessageHandler::get();
+		$session  =& \SeanMorris\Ids\Meta::staticSession(1);
+		$facebook = static::facebook();
+		$response = $facebook->get('/me?fields=id,name,email', $session['facebookAccessToken']);
+		$facebookUser = $response->getGraphUser();
+		$facebookId = $facebookUser->getId();
+
+		if(!$user = \SeanMorris\Access\User::loadOneByFacebookId($facebookId))
+		{
+			$user = new \SeanMorris\Access\User();
+		}
+
+		if($user->id)
+		{
+			$user->consume(['facebookId' => $facebookId], TRUE);
+		}
+		else
+		{
+			$user->consume([
+				'facebookId'   => $facebookId
+				, 'username'   => $facebookUser->getName()
+				, 'email'      => $facebookUser->getEmail()
+				, 'password'   => sha1(rand(255,65355))
+			], TRUE);
+		}
+
+		if($user->forceSave())
+		{
+			$messages->addFlash(
+				new \SeanMorris\Message\SuccessMessage('Facebook linked.')
+			);
+
+			static::_currentUser($user);
+
+			throw new \SeanMorris\Ids\Http\Http303('index');
+		}
+		else
+		{
+			$messages->addFlash(
+				new \SeanMorris\Message\ErrorMessage('Facebook link failed.')
+			);
+		}
+
+		throw new \SeanMorris\Ids\Http\Http303('user');
+	}
+
 	public function _menu(\SeanMorris\Ids\Router $router, $path, \SeanMorris\Ids\Routable $routable = NULL)
 	{
 		$user = static::_currentUser();
@@ -453,19 +590,5 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 
 		return $router->root()->routes()->_pathTo(get_called_class())
 			. '/register?page=' . $router->request()->uri();
-	}
-
-	public function linkFb()
-	{
-		if($user = static::_currentUser())
-		{
-			if($_POST)
-			{
-				var_dump($_POST);
-			}
-			$user->fbid = 'LOL!';
-			$user->save();
-		}
-		return 'LOL!';
 	}
 }

@@ -6,7 +6,7 @@ class User extends \SeanMorris\PressKit\Model
 		$id
 		, $publicId
 		, $created
-		//, $fbid
+		, $facebookId
 		, $username
 		, $email
 		, $password
@@ -40,6 +40,9 @@ class User extends \SeanMorris\PressKit\Model
 		]
 		, $byUsername = [
 			'where' => [['username' => '?']]
+		]
+		, $byFacebookId = [
+			'where' => [['facebookId' => '?']]
 		]
 		, $ignore = ['class']
 	;

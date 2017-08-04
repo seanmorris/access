@@ -439,6 +439,22 @@
                     }
                 }
             }
+        },
+        "5": {
+            "AccessUser": {
+                "fields": {
+                    "role": {
+                        "Field": "role",
+                        "Type": "int(11)",
+                        "Collation": null,
+                        "Null": "NO",
+                        "Key": "",
+                        "Default": "0",
+                        "Extra": "",
+                        "Comment": ""
+                    }
+                }
+            }
         }
     }
 }

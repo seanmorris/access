@@ -450,7 +450,10 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 	{
 		$session =& \SeanMorris\Ids\Meta::staticSession(1);
 
-		$facebook = static::facebook();
+		if(!$facebook = static::facebook())
+		{
+			return FALSE;
+		}
 
 		$helper = $facebook->getRedirectLoginHelper();
 
@@ -467,7 +470,10 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 	public function facebookConnect()
 	{
 		$session     =& \SeanMorris\Ids\Meta::staticSession(1);
-		$facebook    = static::facebook();
+		if(!$facebook = static::facebook())
+		{
+			return FALSE;
+		}
 		$helper      = $facebook->getRedirectLoginHelper();
 		$accessToken = $helper->getAccessToken();
 

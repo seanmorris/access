@@ -41,6 +41,9 @@ class User extends \SeanMorris\PressKit\Model
 		, $byUsername = [
 			'where' => [['username' => '?']]
 		]
+		, $byEmail = [
+			'where' => [['email' => '?']]
+		]
 		, $byFacebookId = [
 			'where' => [['facebookId' => '?']]
 		]

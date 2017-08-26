@@ -13,6 +13,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 			, 'logout' => TRUE
 			, 'confirm' => TRUE
 			, 'view' => TRUE
+			, 'current' => TRUE
 			, 'facebookConnect' => TRUE
 			, 'facebookProfile' => TRUE
 
@@ -113,7 +114,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 		$loginForm['_method'] = 'POST';
 
 		
-		if($facebookLoginUrl = static::facebookLink($router))
+		if($facebookLoginUrl = static::facebookLink($router, 'index'))
 		{
 			$loginForm['facebook'] = [
 				'type' => 'html'
@@ -273,7 +274,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 
 		$loginForm['_method'] = 'POST';
 
-		if($facebookLoginUrl = static::facebookLink($router))
+		if($facebookLoginUrl = static::facebookLink($router, 'index'))
 		{
 			$loginForm['facebook'] = [
 				'type' => 'html'
@@ -446,7 +447,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 		]);
 	}
 
-	protected static function facebookLink($router)
+	protected static function facebookLink($router, $redirect = NULL)
 	{
 		$session =& \SeanMorris\Ids\Meta::staticSession(1);
 
@@ -461,19 +462,30 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 
 		$callbackUrl = $router->request()->scheme()
 			. $router->request()->host()
-			. '/user/facebookConnect'
+			. '/user/facebookConnect?page='
+			. $redirect
 		;
 
 		return $helper->getLoginUrl($callbackUrl, $permissions);
 	}
 
-	public function facebookConnect()
+	public function facebookConnect($router)
 	{
 		$session     =& \SeanMorris\Ids\Meta::staticSession(1);
 		if(!$facebook = static::facebook())
 		{
 			return FALSE;
 		}
+
+		$redirect = NULL;
+
+		$params = $router->request()->get();
+
+		if(isset($params['page']) && preg_match('/^[\w\/]+$/', $params['page']))
+		{
+			$redirect = $params['page'];
+		}
+
 		$helper      = $facebook->getRedirectLoginHelper();
 		$accessToken = $helper->getAccessToken();
 
@@ -482,6 +494,13 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 			if($error = $helper->getError())
 			{
 				\SeanMorris\Ids\Log::error('Facebook error', $error);
+			}
+			else
+			{
+				if($facebookLink = static::facebookLink($router, $redirect))
+				{
+					throw new \SeanMorris\Ids\Http\Http303($facebookLink);
+				}
 			}
 			return FALSE;
 		}
@@ -502,21 +521,18 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 
 		$session['facebookAccessToken'] = (string) $accessToken;
 
-		throw new \SeanMorris\Ids\Http\Http303('user/facebookProfile');
-	}
-
-	public function facebookProfile()
-	{
 		$messages = \SeanMorris\Message\MessageHandler::get();
-		$session  =& \SeanMorris\Ids\Meta::staticSession(1);
-		$facebook = static::facebook();
+		
 		$response = $facebook->get('/me?fields=id,name,email', $session['facebookAccessToken']);
 		$facebookUser = $response->getGraphUser();
 		$facebookId = $facebookUser->getId();
 
 		if(!$user = \SeanMorris\Access\User::loadOneByFacebookId($facebookId))
 		{
-			$user = new \SeanMorris\Access\User();
+			if(!$user = \SeanMorris\Access\User::loadOneByEmail($facebookUser->getEmail()))
+			{
+				$user = new \SeanMorris\Access\User();
+			}
 		}
 
 		if($user->id)
@@ -529,9 +545,10 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 				'facebookId'   => $facebookId
 				, 'username'   => $facebookUser->getName()
 				, 'email'      => $facebookUser->getEmail()
-				, 'password'   => sha1(rand(255,65355))
 			], TRUE);
 		}
+
+		$params = $router->request()->get();
 
 		if($user->forceSave())
 		{
@@ -540,8 +557,6 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 			);
 
 			static::_currentUser($user);
-
-			throw new \SeanMorris\Ids\Http\Http303('index');
 		}
 		else
 		{
@@ -550,7 +565,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 			);
 		}
 
-		throw new \SeanMorris\Ids\Http\Http303('user');
+		throw new \SeanMorris\Ids\Http\Http303($redirect);
 	}
 
 	public function _menu(\SeanMorris\Ids\Router $router, $path, \SeanMorris\Ids\Routable $routable = NULL)
@@ -615,5 +630,32 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 
 		return $router->root()->routes()->_pathTo(get_called_class())
 			. '/register?page=' . $router->request()->uri();
+	}
+
+	public function current($router)
+	{
+		$user = static::_currentUser();
+		$params = $router->request()->params();
+		$resource = new \SeanMorris\PressKit\Api\Resource(
+			$router
+			, ['body' => $user->unconsume()]
+		);
+		\SeanMorris\Ids\Log::debug($resource);
+		if($params['api'] == 'html')
+		{
+			echo $list;
+		}
+		else if($params['api'] == 'xml')
+		{
+			header('Content-Type: application/xml');
+			echo $resource->toXml();
+		}
+		else
+		{
+			header('Content-Type: application/json');
+			echo $resource->toJson();
+		}
+
+		die;
 	}
 }

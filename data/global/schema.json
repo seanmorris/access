@@ -455,6 +455,40 @@
                     }
                 }
             }
+        },
+        "6": {
+            "AccessUser": {
+                "fields": {
+                    "username": {
+                        "Field": "username",
+                        "Type": "varchar(64)",
+                        "Collation": "latin1_swedish_ci",
+                        "Null": "NO",
+                        "Key": "UNI",
+                        "Default": null,
+                        "Extra": "",
+                        "Comment": ""
+                    }
+                },
+                "keys": {
+                    "username": {
+                        "1": {
+                            "Table": "AccessUser",
+                            "Non_unique": "0",
+                            "Key_name": "username",
+                            "Seq_in_index": "1",
+                            "Column_name": "username",
+                            "Collation": "A",
+                            "Sub_part": null,
+                            "Packed": null,
+                            "Null": "",
+                            "Index_type": "BTREE",
+                            "Comment": "",
+                            "Index_comment": ""
+                        }
+                    }
+                }
+            }
         }
     }
 }

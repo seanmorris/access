@@ -7,7 +7,7 @@ class UserState extends \SeanMorris\PressKit\State
 		-1 => [
 			'create'	=> TRUE
 			, 'read'	 => TRUE
-			, 'update'	 => [TRUE, 'SeanMorris\Access\Role\Moderator']
+			, 'update'	 => [TRUE, 'SeanMorris\Access\Role\Administrator']
 			, 'delete'	 => [FALSE, 'SeanMorris\Access\Role\Administrator']
 			, '$id'	=> [
 				'write'  => FALSE
@@ -50,7 +50,7 @@ class UserState extends \SeanMorris\PressKit\State
 		, 0 => [
 			'create'	=> TRUE
 			, 'read'	 => TRUE
-			, 'update'	 => [TRUE, 'SeanMorris\Access\Role\Moderator']
+			, 'update'	 => [TRUE, 'SeanMorris\Access\Role\Administrator']
 			, 'delete'	 => [FALSE, 'SeanMorris\Access\Role\Administrator']
 			, '$id'	=> [
 				'write'  => FALSE

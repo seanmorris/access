@@ -36,6 +36,9 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 		, $modelRoute = 'SeanMorris\PressKit\Route\ModelSubRoute'
 		, $sessionStarted = FALSE
 		, $userLoaded = FALSE
+		, $forms = [
+			'edit' => 'SeanMorris\PressKit\Form\UserForm'
+		]
 		, $menus = [
 			'main' => [
 				'Login' => [

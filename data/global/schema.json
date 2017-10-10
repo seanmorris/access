@@ -489,6 +489,22 @@
                     }
                 }
             }
+        },
+        "7": {
+            "AccessUser": {
+                "fields": {
+                    "class": {
+                        "Field": "class",
+                        "Type": "varchar(255)",
+                        "Collation": "latin1_swedish_ci",
+                        "Null": "NO",
+                        "Key": "",
+                        "Default": null,
+                        "Extra": "",
+                        "Comment": ""
+                    }
+                }
+            }
         }
     }
 }

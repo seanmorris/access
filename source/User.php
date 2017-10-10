@@ -5,6 +5,7 @@ class User extends \SeanMorris\PressKit\Model
 	protected
 		$id
 		, $publicId
+		, $class
 		, $created
 		, $facebookId
 		, $username
@@ -47,7 +48,6 @@ class User extends \SeanMorris\PressKit\Model
 		, $byFacebookId = [
 			'where' => [['facebookId' => '?']]
 		]
-		, $ignore = ['class']
 	;
 
 	public function login($password)
@@ -85,8 +85,6 @@ class User extends \SeanMorris\PressKit\Model
 
 	public function hasRole($checkRole)
 	{
-		static $roles;
-
 		if($this->id == 1)
 		{
 			return true;
@@ -97,16 +95,21 @@ class User extends \SeanMorris\PressKit\Model
 			return true;	
 		}
 
-		if(!$roles)
+		if($this->id)
 		{
-			$roles = $this->getSubjects('roles');
-		}
+			$roles = [];
 
-		foreach($roles as $role)
-		{
-			if(is_a($role, $checkRole, TRUE))
+			if(!$this->roles)
 			{
-				return true;
+				$roles = $this->getSubjects('roles');
+			}
+
+			foreach($roles as $role)
+			{
+				if(is_a($role, $checkRole, TRUE))
+				{
+					return true;
+				}
 			}
 		}
 

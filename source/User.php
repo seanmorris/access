@@ -85,6 +85,13 @@ class User extends \SeanMorris\PressKit\Model
 
 	public function hasRole($checkRole)
 	{
+		static $cache = [];
+
+		if(array_key_exists($checkRole, $cache))
+		{
+			return $cache[$checkRole];
+		}
+
 		if($this->id == 1)
 		{
 			return true;
@@ -101,17 +108,20 @@ class User extends \SeanMorris\PressKit\Model
 
 			if(!$this->roles)
 			{
-				$roles = $this->getSubjects('roles');
+				$roles = $this->roles = $this->getSubjects('roles');
 			}
 
 			foreach($roles as $role)
 			{
 				if(is_a($role, $checkRole, TRUE))
 				{
+					$cache[$checkRole] = TRUE;
 					return true;
 				}
 			}
 		}
+
+		$cache[$checkRole] = FALSE;
 
 		return false;
 	}

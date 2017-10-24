@@ -269,6 +269,19 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 
 	public function login($router)
 	{
+		$params = $router->request()->params();
+
+		if(!$_POST
+			&& isset($params['api'])
+			&& $params['api'] !== 'html'
+			&& !static::_currentUser()->id
+		){
+			$resource = new static::$resourceClass($router);
+			print $resource->encode($params['api']);
+			die;
+		}
+
+
 		$this->context['_router'] = $router;
 		$this->context['_controller'] = $this;
 
@@ -317,7 +330,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 
 		if($_POST && $form->validate($_POST))
 		{
-			$user = \SeanMorris\Access\User::loadOneByUsername($_POST['username']);
+			$this->model = $user = \SeanMorris\Access\User::loadOneByUsername($_POST['username']);
 			$messages = \SeanMorris\Message\MessageHandler::get();
 
 			if($user)
@@ -326,16 +339,26 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 				{
 					static::_currentUser($user);
 
-					$redirect = $currentUri;
-
-					if(isset($_GET['page']))
-					{
-						$redirect = parse_url($_GET['page'], PHP_URL_PATH);
-					}
-
 					$messages->addFlash(new \SeanMorris\Message\SuccessMessage('Logged in.'));
 
-					throw new \SeanMorris\Ids\Http\Http303($redirect);
+					if(1 || isset($params['api']))
+					{
+						$resource = new static::$resourceClass($router);
+						echo $resource->encode($params['api'] ?? 'json');
+
+						die;
+					}
+					else
+					{
+						$redirect = $currentUri;
+
+						if(isset($_GET['page']))
+						{
+							$redirect = parse_url($_GET['page'], PHP_URL_PATH);
+						}
+
+						throw new \SeanMorris\Ids\Http\Http303($redirect);
+					}
 				}
 			}
 
@@ -450,7 +473,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 		]);
 	}
 
-	protected static function facebookLink($router, $redirect = NULL)
+	public static function facebookLink($router, $redirect = NULL)
 	{
 		$session =& \SeanMorris\Ids\Meta::staticSession(1);
 

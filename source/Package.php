@@ -6,6 +6,7 @@ class Package extends \SeanMorris\Ids\Package
 		$tables = [
 			'main' => [
 				'AccessRole'
+				, 'AccessUser'
 			]
 		]
 	;

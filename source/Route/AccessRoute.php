@@ -5,31 +5,37 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 	const CONFIRM_TOKEN_SECRET = 'ACCESS ROUTE SECRET HERE';
 
 	protected
-		$formTheme = 'SeanMorris\Form\Theme\Theme'
+		$formTheme    = 'SeanMorris\Form\Theme\Theme'
 		, $modelClass = 'SeanMorris\Access\User'
-		, $access = [
-			'register' => TRUE
-			, 'login' => TRUE
-			, 'logout' => TRUE
-			, 'confirm' => TRUE
-			, 'view' => TRUE
-			, 'current' => TRUE
+		, $access     = [
+			'register'          => TRUE
+			, 'login'           => TRUE
+			, 'logout'          => TRUE
+			, 'confirm'         => TRUE
+			, 'view'            => TRUE
+			, 'current'         => TRUE
 			, 'facebookConnect' => TRUE
 			, 'facebookProfile' => TRUE
+			, 'roles'           => TRUE
 
-			, 'view' => TRUE
-			, 'edit' => 'SeanMorris\Access\Role\Administrator'
-			, 'create' => 'SeanMorris\Access\Role\Administrator'
-			, 'delete' => 'SeanMorris\Access\Role\Administrator'
-			, '_contextMenu' => 'SeanMorris\Access\Role\Administrator'
-			, 'index' => TRUE
+			, 'view'            => TRUE
+			, 'edit'            => 'SeanMorris\Access\Role\Administrator'
+			, 'create'          => 'SeanMorris\Access\Role\Administrator'
+			, 'delete'          => 'SeanMorris\Access\Role\Administrator'
+			, '_contextMenu'    => 'SeanMorris\Access\Role\Administrator'
+			, 'index'           => TRUE
 		]
 	;
 	public
-		$alias = [
+		$title = 'Users'
+		/*
+		, $alias = [
 			'index' => 'login'
 		]
-		, $title = 'Users'
+		*/
+		, $routes = [
+			'roles' => 'SeanMorris\Access\Route\RoleRoute'
+		]
 	;
 	protected static
 		$titleField = 'username'
@@ -37,7 +43,8 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 		, $sessionStarted = FALSE
 		, $userLoaded = FALSE
 		, $forms = [
-			'edit' => 'SeanMorris\PressKit\Form\UserForm'
+			'search' => 'SeanMorris\PressKit\Form\UserSearchForm'
+			, 'edit' => 'SeanMorris\PressKit\Form\UserForm'
 		]
 		, $menus = [
 			'main' => [
@@ -54,6 +61,19 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 			]
 		]
 	;
+
+	public function index($router)
+	{
+		if($user = static::_currentUser())
+		{
+			if($user->hasRole('SeanMorris\Access\Role\Administrator'))
+			{
+				return parent::index($router);
+			}
+		}
+
+		throw new \SeanMorris\Ids\Http\Http303($router->path()->append('login')->pathString());
+	}
 
 	public static function _currentUser(\SeanMorris\Access\User $user = NULL)
 	{
@@ -330,35 +350,34 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 
 		if($_POST && $form->validate($_POST))
 		{
-			$this->model = $user = \SeanMorris\Access\User::loadOneByUsername($_POST['username']);
+			$user = \SeanMorris\Access\User::loadOneByUsername($_POST['username']);
 			$messages = \SeanMorris\Message\MessageHandler::get();
 
-			if($user)
+			if($user && $user->login($_POST['password']))
 			{
-				if($user->login($_POST['password']))
+				static::_currentUser($user);
+
+				$this->model = $user;
+
+				$messages->addFlash(new \SeanMorris\Message\SuccessMessage('Logged in.'));
+
+				if(isset($params['api']))
 				{
-					static::_currentUser($user);
+					$resource = new static::$resourceClass($router);
+					echo $resource->encode($params['api'] ?? 'json');
 
-					$messages->addFlash(new \SeanMorris\Message\SuccessMessage('Logged in.'));
+					die;
+				}
+				else
+				{
+					$redirect = $currentUri;
 
-					if(1 || isset($params['api']))
+					if(isset($_GET['page']))
 					{
-						$resource = new static::$resourceClass($router);
-						echo $resource->encode($params['api'] ?? 'json');
-
-						die;
+						$redirect = parse_url($_GET['page'], PHP_URL_PATH);
 					}
-					else
-					{
-						$redirect = $currentUri;
 
-						if(isset($_GET['page']))
-						{
-							$redirect = parse_url($_GET['page'], PHP_URL_PATH);
-						}
-
-						throw new \SeanMorris\Ids\Http\Http303($redirect);
-					}
+					throw new \SeanMorris\Ids\Http\Http303($redirect);
 				}
 			}
 
@@ -374,6 +393,13 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 		if($user->publicId)
 		{
 			throw new \SeanMorris\Ids\Http\Http303($currentUri . '/' . $user->publicId);
+		}
+
+		if(isset($params['api'])) 
+		{
+			$resource = new static::$resourceClass($router);
+			print $resource->encode($params['api']);
+			die;
 		}
 
 		$formTheme = $this->formTheme;
@@ -489,7 +515,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 		$callbackUrl = $router->request()->scheme()
 			. $router->request()->host()
 			. '/user/facebookConnect?page='
-			. $redirect
+			. urlencode($redirect)
 		;
 
 		return $helper->getLoginUrl($callbackUrl, $permissions);
@@ -507,13 +533,32 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 
 		$params = $router->request()->get();
 
-		if(isset($params['page']) && preg_match('/^[\w\/]+$/', $params['page']))
+		if(isset($params['page']))
 		{
+			$redirect = parse_url($params['page']);
+
+			$redirect = $redirect['path'] ?? NULL . (
+				isset($redirect['query'])
+					? '?' . $redirect['query']
+					: NULL
+			);
+
 			$redirect = $params['page'];
 		}
 
-		$helper      = $facebook->getRedirectLoginHelper();
-		$accessToken = $helper->getAccessToken();
+		try
+		{
+			$helper      = $facebook->getRedirectLoginHelper();
+			$accessToken = $helper->getAccessToken();
+		}
+		catch(\Exception $e)
+		{
+			$messages = \SeanMorris\Message\MessageHandler::get();
+
+			$messages->addFlash(new \SeanMorris\Message\ErrorMessage(
+				'Facebook error.'
+			));
+		}
 
 		if(!isset($accessToken))
 		{
@@ -666,7 +711,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 			$router
 			, ['body' => $user->unconsume()]
 		);
-		\SeanMorris\Ids\Log::debug($resource);
+		//\SeanMorris\Ids\Log::debug($resource);
 		if($params['api'] == 'html')
 		{
 			echo $list;

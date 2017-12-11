@@ -48,6 +48,17 @@ class User extends \SeanMorris\PressKit\Model
 		, $byFacebookId = [
 			'where' => [['facebookId' => '?']]
 		]
+		, $bySearch = [
+			'named' => TRUE
+			, 'distinct' => TRUE
+			, 'where' => [
+				'OR' => [
+					['id'         => '?', '=',    '%s',     'id',      FALSE]
+					, ['id'       => '?', 'LIKE', '%%%s%%', 'keyword', FALSE]
+					, ['username' => '?', 'LIKE', '%%%s%%', 'keyword', FALSE]
+				]
+			]
+		]
 	;
 
 	public function login($password)
@@ -87,11 +98,6 @@ class User extends \SeanMorris\PressKit\Model
 	{
 		static $cache = [];
 
-		if(array_key_exists($checkRole, $cache))
-		{
-			return $cache[$checkRole];
-		}
-
 		if($this->id == 1)
 		{
 			return true;
@@ -104,26 +110,29 @@ class User extends \SeanMorris\PressKit\Model
 
 		if($this->id)
 		{
-			$roles = [];
-
-			if(!$this->roles)
+			if(isset($cache[$this->id]) && array_key_exists($checkRole, $cache[$this->id]))
 			{
-				$roles = $this->roles = $this->getSubjects('roles');
+				return $cache[$this->id][$checkRole];
+			}
+			
+			if(!$roles = $this->roles)
+			{
+				$roles = $this->getSubjects('roles');
 			}
 
 			foreach($roles as $role)
 			{
 				if(is_a($role, $checkRole, TRUE))
 				{
-					$cache[$checkRole] = TRUE;
-					return true;
+					$cache[$this->id][$checkRole] = TRUE;
+					return TRUE;
 				}
 			}
+
+			$cache[$this->id][$checkRole] = FALSE;
+
+			return FALSE;
 		}
-
-		$cache[$checkRole] = FALSE;
-
-		return false;
 	}
 
 	public function isSame($user)

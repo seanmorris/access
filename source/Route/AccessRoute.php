@@ -274,14 +274,19 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 	{
 		session_destroy();
 
-		$redirect = '';
+		$redirect = $redirectQuery = '';
 
 		$messages = \SeanMorris\Message\MessageHandler::get();
 		$messages->addFlash(new \SeanMorris\Message\SuccessMessage('Logged out.'));
 
 		if(isset($_GET['page']))
 		{
-			$redirect = parse_url($_GET['page'], PHP_URL_PATH);
+			$redirect      = parse_url($_GET['page'], PHP_URL_PATH);
+			$redirectQuery = parse_url($_GET['page'], PHP_URL_QUERY);
+		}
+		
+		if($redirectQuery) {
+			$redirect .= '?' . $redirectQuery;
 		}
 
 		throw new \SeanMorris\Ids\Http\Http303($redirect);

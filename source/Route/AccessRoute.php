@@ -43,8 +43,8 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 		, $sessionStarted = FALSE
 		, $userLoaded = FALSE
 		, $forms = [
-			'search' => 'SeanMorris\PressKit\Form\UserSearchForm'
-			, 'edit' => 'SeanMorris\PressKit\Form\UserForm'
+			'search'  => 'SeanMorris\PressKit\Form\UserSearchForm'
+			, 'edit'  => 'SeanMorris\PressKit\Form\UserForm'
 		]
 		, $menus = [
 			'main' => [
@@ -139,20 +139,20 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 		
 		if($facebookLoginUrl = static::facebookLink($router, 'index'))
 		{
-			$loginForm['facebook'] = [
-				'type' => 'html'
-				//, 'value' => '<br /><br /><div class="fb-login-button" data-max-rows="1" data-size="medium" data-show-faces="false" data-auto-logout-link="false"></div>'
-				, 'value' => sprintf(
-					'<a href = "%s" class = "fbLogin">
-						<img src = "/SeanMorris/TheWhtRbt/images/facebook_login.png" style = "width:100%%;">
-					</a><br />
+			// $loginForm['facebook'] = [
+			// 	'type' => 'html'
+			// 	//, 'value' => '<br /><br /><div class="fb-login-button" data-max-rows="1" data-size="medium" data-show-faces="false" data-auto-logout-link="false"></div>'
+			// 	, 'value' => sprintf(
+			// 		'<a href = "%s" class = "fbLogin">
+			// 			<img src = "/SeanMorris/TheWhtRbt/images/facebook_login.png" style = "width:100%%;">
+			// 		</a><br />
 
-					- OR -
+			// 		- OR -
 
-					<br />'
-					, $facebookLoginUrl
-				)
-			];
+			// 		<br />'
+			// 		, $facebookLoginUrl
+			// 	)
+			// ];
 		}
 
 		$loginForm['username'] = [
@@ -184,7 +184,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 			'type' => 'submit',
 		];
 
-		$form = new \SeanMorris\Form\Form($loginForm);
+		$form = new \SeanMorris\PressKit\Form\Form($loginForm);
 
 		$loggedIn = false;
 
@@ -205,7 +205,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 
 				if($user->id)
 				{
-					$messages->addFlash(new \SeanMorris\Message\ErrorMessage('User already exists.'));
+					$messages->addFlash(new \SeanMorris\Message\ErrorMessage('You\'re logged in already.'));
 				}
 				else
 				{
@@ -267,6 +267,31 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 
 		$formTheme = $this->formTheme;
 
+		$get = $router->request()->get();
+
+		if(isset($get['api']) && !$router->subRouted())
+		{
+			if($get['api'] == 'html')
+			{
+				print $form->render($formTheme);
+			}
+			else if($get['api'])
+			{
+				$parentController = $router->parent()->routes();
+
+				$resourceClass = $parentController::$resourceClass
+					?? static::$resourceClass;
+
+				$resource = new $resourceClass($router);
+
+				$resource->meta('form', $form->toStructure());
+				$resource->body('[]');
+
+				echo $resource->encode($get['api']);
+				die;
+			}
+		}
+
 		return $form->render($formTheme);
 	}
 
@@ -301,9 +326,9 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 			&& $params['api'] !== 'html'
 			&& !static::_currentUser()->id
 		){
-			$resource = new static::$resourceClass($router);
-			print $resource->encode($params['api']);
-			die;
+			// $resource = new static::$resourceClass($router);
+			// print $resource->encode($params['api']);
+			// die;
 		}
 
 
@@ -317,11 +342,16 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 
 		if($facebookLoginUrl = static::facebookLink($router, 'index'))
 		{
+			/*
 			$loginForm['facebook'] = [
 				'type' => 'html'
 				//, 'value' => '<br /><br /><div class="fb-login-button" data-max-rows="1" data-size="medium" data-show-faces="false" data-auto-logout-link="false"></div>'
 				, 'value' => sprintf(
-					'<a href = "%s" class = "fbLogin">
+					'<a
+						href   = "%s"
+						class  = "fbLogin"
+						target = "_blank"
+					>
 						<img src = "/SeanMorris/TheWhtRbt/images/facebook_login.png" style = "width:100%%;">
 					</a><br />
 
@@ -331,6 +361,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 					, $facebookLoginUrl
 				)
 			];
+			*/
 		}
 
 		$loginForm['username'] = [
@@ -348,17 +379,20 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 			'type' => 'submit',
 		];
 
-		$form = new \SeanMorris\Form\Form($loginForm);
+		$form = new \SeanMorris\PressKit\Form\Form($loginForm);
 		$loggedIn = false;
 		$currentUri = $router->request()->uri();
 		$statusCode = 200;
+		$success    = true;
 
 		if($_POST && $form->validate($_POST))
 		{
-			$user = \SeanMorris\Access\User::loadOneByUsername($_POST['username']);
+			$user = \SeanMorris\Access\User::loadOneByUsername(
+				$_POST['username'] ?? NULL
+			);
 			$messages = \SeanMorris\Message\MessageHandler::get();
 
-			if($user && $user->login($_POST['password']))
+			if($user && $user->login($_POST['password'] ?? NULL))
 			{
 				static::_currentUser($user);
 
@@ -390,21 +424,43 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 				
 			$messages->addFlash(new \SeanMorris\Message\ErrorMessage('Bad username/password.'));
 
+			$success    = false;
+
 			$statusCode = 400;
 		}
 
 		$user = static::_currentUser();
+		$userIdUrl = $router->path()->consumeNode();
 
-		if($user->publicId)
+		if(!$userIdUrl && $user->publicId)
 		{
 			throw new \SeanMorris\Ids\Http\Http303($currentUri . '/' . $user->publicId);
 		}
 
-		if(isset($params['api'])) 
+		$get = $router->request()->get();
+
+		if(isset($get['api']) && !$router->subRouted())
 		{
-			$resource = new static::$resourceClass($router);
-			print $resource->encode($params['api']);
-			die;
+			if($get['api'] == 'html')
+			{
+				print $form->render($formTheme);
+			}
+			else if($get['api'])
+			{
+				$parentController = $router->parent()->routes();
+
+				$resourceClass = $parentController::$resourceClass
+					?? static::$resourceClass;
+
+				$resource = new $resourceClass($router);
+
+				$resource->meta('form', $form->toStructure());
+
+				$resource->body('Testing');
+
+				echo $resource->encode($get['api']);
+				die;
+			}
 		}
 
 		$formTheme = $this->formTheme;
@@ -524,6 +580,13 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 		;
 
 		return $helper->getLoginUrl($callbackUrl, $permissions);
+	}
+
+	public static function facebookToken()
+	{
+		$session = \SeanMorris\Ids\Meta::staticSession(1);
+
+		return $session['facebookAccessToken'] ?? NULL;
 	}
 
 	public function facebookConnect($router)

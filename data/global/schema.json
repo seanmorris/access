@@ -16,7 +16,7 @@
                     "class": {
                         "Field": "class",
                         "Type": "varchar(255)",
-                        "Collation": "utf8_bin",
+                        "Collation": "latin1_swedish_ci",
                         "Null": "NO",
                         "Key": "",
                         "Default": null,
@@ -47,7 +47,7 @@
                         "Field": "grantedBy",
                         "Type": "int(11)",
                         "Collation": null,
-                        "Null": "YES",
+                        "Null": "NO",
                         "Key": "",
                         "Default": null,
                         "Extra": "",
@@ -88,146 +88,6 @@
                     "class": {
                         "Field": "class",
                         "Type": "varchar(255)",
-                        "Collation": "utf8_bin",
-                        "Null": "NO",
-                        "Key": "",
-                        "Default": null,
-                        "Extra": "",
-                        "Comment": ""
-                    },
-                    "publicId": {
-                        "Field": "publicId",
-                        "Type": "binary(16)",
-                        "Collation": null,
-                        "Null": "NO",
-                        "Key": "",
-                        "Default": null,
-                        "Extra": "",
-                        "Comment": ""
-                    },
-                    "created": {
-                        "Field": "created",
-                        "Type": "int(11)",
-                        "Collation": null,
-                        "Null": "NO",
-                        "Key": "",
-                        "Default": null,
-                        "Extra": "",
-                        "Comment": ""
-                    },
-                    "username": {
-                        "Field": "username",
-                        "Type": "varchar(255)",
-                        "Collation": null,
-                        "Null": "NO",
-                        "Key": "",
-                        "Default": null,
-                        "Extra": "",
-                        "Comment": ""
-                    },
-                    "email": {
-                        "Field": "email",
-                        "Type": "varchar(255)",
-                        "Collation": null,
-                        "Null": "NO",
-                        "Key": "",
-                        "Default": null,
-                        "Extra": "",
-                        "Comment": ""
-                    },
-                    "password": {
-                        "Field": "password",
-                        "Type": "varchar(255)",
-                        "Collation": null,
-                        "Null": "NO",
-                        "Key": "",
-                        "Default": null,
-                        "Extra": "",
-                        "Comment": ""
-                    },
-                    "avatar": {
-                        "Field": "avatar",
-                        "Type": "int(11)",
-                        "Collation": null,
-                        "Null": "YES",
-                        "Key": "",
-                        "Default": null,
-                        "Extra": "",
-                        "Comment": ""
-                    },
-                    "state": {
-                        "Field": "state",
-                        "Type": "int(11)",
-                        "Collation": null,
-                        "Null": "NO",
-                        "Key": "",
-                        "Default": null,
-                        "Extra": "",
-                        "Comment": ""
-                    }
-                },
-                "keys": {
-                    "PRIMARY": {
-                        "1": {
-                            "Table": "AccessUser",
-                            "Non_unique": "0",
-                            "Key_name": "PRIMARY",
-                            "Seq_in_index": "1",
-                            "Column_name": "id",
-                            "Collation": "A",
-                            "Sub_part": null,
-                            "Packed": null,
-                            "Null": "",
-                            "Index_type": "BTREE",
-                            "Comment": "",
-                            "Index_comment": ""
-                        }
-                    }
-                }
-            }
-        },
-        "1": {
-            "AccessUser": {
-                "fields": {
-                    "username": {
-                        "Field": "username",
-                        "Type": "varchar(255)",
-                        "Collation": "utf8_bin",
-                        "Null": "NO",
-                        "Key": "",
-                        "Default": null,
-                        "Extra": "",
-                        "Comment": ""
-                    },
-                    "email": {
-                        "Field": "email",
-                        "Type": "varchar(255)",
-                        "Collation": "utf8_bin",
-                        "Null": "NO",
-                        "Key": "",
-                        "Default": null,
-                        "Extra": "",
-                        "Comment": ""
-                    },
-                    "password": {
-                        "Field": "password",
-                        "Type": "varchar(255)",
-                        "Collation": "utf8_bin",
-                        "Null": "NO",
-                        "Key": "",
-                        "Default": null,
-                        "Extra": "",
-                        "Comment": ""
-                    }
-                }
-            }
-        },
-        "2": {
-            "AccessRole": {
-                "fields": {
-                    "class": {
-                        "Field": "class",
-                        "Type": "varchar(255)",
                         "Collation": "latin1_swedish_ci",
                         "Null": "NO",
                         "Key": "",
@@ -235,20 +95,6 @@
                         "Extra": "",
                         "Comment": ""
                     },
-                    "grantedBy": {
-                        "Field": "grantedBy",
-                        "Type": "int(11)",
-                        "Collation": null,
-                        "Null": "NO",
-                        "Key": "",
-                        "Default": null,
-                        "Extra": "",
-                        "Comment": ""
-                    }
-                }
-            },
-            "AccessUser": {
-                "fields": {
                     "publicId": {
                         "Field": "publicId",
                         "Type": "binary(16)",
@@ -293,6 +139,26 @@
                         "Field": "password",
                         "Type": "varchar(1024)",
                         "Collation": "latin1_swedish_ci",
+                        "Null": "YES",
+                        "Key": "",
+                        "Default": null,
+                        "Extra": "",
+                        "Comment": ""
+                    },
+                    "avatar": {
+                        "Field": "avatar",
+                        "Type": "int(11)",
+                        "Collation": null,
+                        "Null": "YES",
+                        "Key": "",
+                        "Default": null,
+                        "Extra": "",
+                        "Comment": ""
+                    },
+                    "state": {
+                        "Field": "state",
+                        "Type": "int(11)",
+                        "Collation": null,
                         "Null": "NO",
                         "Key": "",
                         "Default": null,
@@ -305,12 +171,38 @@
                         "Collation": null,
                         "Null": "NO",
                         "Key": "",
+                        "Default": "0",
+                        "Extra": "",
+                        "Comment": ""
+                    },
+                    "facebookId": {
+                        "Field": "facebookId",
+                        "Type": "varchar(255)",
+                        "Collation": "latin1_swedish_ci",
+                        "Null": "YES",
+                        "Key": "UNI",
                         "Default": null,
                         "Extra": "",
                         "Comment": ""
                     }
                 },
                 "keys": {
+                    "PRIMARY": {
+                        "1": {
+                            "Table": "AccessUser",
+                            "Non_unique": "0",
+                            "Key_name": "PRIMARY",
+                            "Seq_in_index": "1",
+                            "Column_name": "id",
+                            "Collation": "A",
+                            "Sub_part": null,
+                            "Packed": null,
+                            "Null": "",
+                            "Index_type": "BTREE",
+                            "Comment": "",
+                            "Index_comment": ""
+                        }
+                    },
                     "username": {
                         "1": {
                             "Table": "AccessUser",
@@ -358,25 +250,7 @@
                             "Comment": "",
                             "Index_comment": ""
                         }
-                    }
-                }
-            }
-        },
-        "3": {
-            "AccessUser": {
-                "fields": {
-                    "facebookId": {
-                        "Field": "facebookId",
-                        "Type": "varchar(255)",
-                        "Collation": "latin1_swedish_ci",
-                        "Null": "YES",
-                        "Key": "UNI",
-                        "Default": null,
-                        "Extra": "",
-                        "Comment": ""
-                    }
-                },
-                "keys": {
+                    },
                     "facebookId": {
                         "1": {
                             "Table": "AccessUser",
@@ -392,116 +266,6 @@
                             "Comment": "",
                             "Index_comment": ""
                         }
-                    }
-                }
-            }
-        },
-        "4": {
-            "AccessUser": {
-                "fields": {
-                    "username": {
-                        "Field": "username",
-                        "Type": "varchar(64)",
-                        "Collation": "latin1_swedish_ci",
-                        "Null": "NO",
-                        "Key": "MUL",
-                        "Default": null,
-                        "Extra": "",
-                        "Comment": ""
-                    },
-                    "password": {
-                        "Field": "password",
-                        "Type": "varchar(1024)",
-                        "Collation": "latin1_swedish_ci",
-                        "Null": "YES",
-                        "Key": "",
-                        "Default": null,
-                        "Extra": "",
-                        "Comment": ""
-                    }
-                },
-                "keys": {
-                    "username": {
-                        "1": {
-                            "Table": "AccessUser",
-                            "Non_unique": "1",
-                            "Key_name": "username",
-                            "Seq_in_index": "1",
-                            "Column_name": "username",
-                            "Collation": "A",
-                            "Sub_part": null,
-                            "Packed": null,
-                            "Null": "",
-                            "Index_type": "BTREE",
-                            "Comment": "",
-                            "Index_comment": ""
-                        }
-                    }
-                }
-            }
-        },
-        "5": {
-            "AccessUser": {
-                "fields": {
-                    "role": {
-                        "Field": "role",
-                        "Type": "int(11)",
-                        "Collation": null,
-                        "Null": "NO",
-                        "Key": "",
-                        "Default": "0",
-                        "Extra": "",
-                        "Comment": ""
-                    }
-                }
-            }
-        },
-        "6": {
-            "AccessUser": {
-                "fields": {
-                    "username": {
-                        "Field": "username",
-                        "Type": "varchar(64)",
-                        "Collation": "latin1_swedish_ci",
-                        "Null": "NO",
-                        "Key": "UNI",
-                        "Default": null,
-                        "Extra": "",
-                        "Comment": ""
-                    }
-                },
-                "keys": {
-                    "username": {
-                        "1": {
-                            "Table": "AccessUser",
-                            "Non_unique": "0",
-                            "Key_name": "username",
-                            "Seq_in_index": "1",
-                            "Column_name": "username",
-                            "Collation": "A",
-                            "Sub_part": null,
-                            "Packed": null,
-                            "Null": "",
-                            "Index_type": "BTREE",
-                            "Comment": "",
-                            "Index_comment": ""
-                        }
-                    }
-                }
-            }
-        },
-        "7": {
-            "AccessUser": {
-                "fields": {
-                    "class": {
-                        "Field": "class",
-                        "Type": "varchar(255)",
-                        "Collation": "latin1_swedish_ci",
-                        "Null": "NO",
-                        "Key": "",
-                        "Default": null,
-                        "Extra": "",
-                        "Comment": ""
                     }
                 }
             }

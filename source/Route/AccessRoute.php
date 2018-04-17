@@ -43,8 +43,10 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 		, $sessionStarted = FALSE
 		, $userLoaded = FALSE
 		, $forms = [
-			'search'  => 'SeanMorris\PressKit\Form\UserSearchForm'
-			, 'edit'  => 'SeanMorris\PressKit\Form\UserForm'
+			'search'     => 'SeanMorris\PressKit\Form\UserSearchForm'
+			, 'edit'     => 'SeanMorris\PressKit\Form\UserForm'
+			, 'login'    => 'SeanMorris\Access\Form\LoginForm'
+			, 'register' => 'SeanMorris\Access\Form\RegisterForm'
 		]
 		, $menus = [
 			'main' => [
@@ -134,57 +136,9 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 		$this->context['title'] = 'Register';
 		$this->context['body'] = 'Register';
 
-		$loginForm['_method'] = 'POST';
+		$formClass = $this->_getForm('register');
 
-		
-		if($facebookLoginUrl = static::facebookLink($router, 'index'))
-		{
-			// $loginForm['facebook'] = [
-			// 	'type' => 'html'
-			// 	//, 'value' => '<br /><br /><div class="fb-login-button" data-max-rows="1" data-size="medium" data-show-faces="false" data-auto-logout-link="false"></div>'
-			// 	, 'value' => sprintf(
-			// 		'<a href = "%s" class = "fbLogin">
-			// 			<img src = "/SeanMorris/TheWhtRbt/images/facebook_login.png" style = "width:100%%;">
-			// 		</a><br />
-
-			// 		- OR -
-
-			// 		<br />'
-			// 		, $facebookLoginUrl
-			// 	)
-			// ];
-		}
-
-		$loginForm['username'] = [
-			'_title' => 'username'
-			, 'type' => 'text'
-		];
-
-		$loginForm['email'] = [
-			'_title' => 'email address'
-			, 'type' => 'text'
-			, '_validators' => [
-				'SeanMorris\Form\Validator\Email' =>
-					'%s must be a valid email.'
-			]
-		];
-
-		$loginForm['password'] = [
-			'_title' => 'password'
-			, 'type' => 'password'
-		];
-
-		$loginForm['confirmPassword'] = [
-			'_title' => 'confirm password'
-			, 'type' => 'password'
-		];
-
-		$loginForm['submit'] = [
-			'_title' => 'Submit',
-			'type' => 'submit',
-		];
-
-		$form = new \SeanMorris\PressKit\Form\Form($loginForm);
+		$form = new $formClass();
 
 		$loggedIn = false;
 
@@ -192,7 +146,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 
 		if($_POST && $form->validate($_POST))
 		{
-			$user = \SeanMorris\Access\User::loadOneByUsername($_POST['username']);
+			$user = $this->modelClass::loadOneByUsername($_POST['username']);
 
 			if($_POST['password'] !== $_POST['confirmPassword'])
 			{
@@ -200,8 +154,8 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 			}
 			else
 			{
-				//$user = new \SeanMorris\Access\User;
-				$user = static::_currentUser();
+				$user = new $this->modelClass;
+				// $user = static::_currentUser();
 
 				if($user->id)
 				{
@@ -209,7 +163,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 				}
 				else
 				{
-					$user->consume($form->getValues());
+					$user->consume($form->getValues(), TRUE);
 
 					try
 					{
@@ -331,55 +285,18 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 			// die;
 		}
 
-
 		$this->context['_router'] = $router;
 		$this->context['_controller'] = $this;
 
 		$this->context['title'] = 'Login';
 		$this->context['body'] = 'Login';
 
-		$loginForm['_method'] = 'POST';
+		// $form = new \SeanMorris\Access\Form\LoginForm();
 
-		if($facebookLoginUrl = static::facebookLink($router, 'index'))
-		{
-			/*
-			$loginForm['facebook'] = [
-				'type' => 'html'
-				//, 'value' => '<br /><br /><div class="fb-login-button" data-max-rows="1" data-size="medium" data-show-faces="false" data-auto-logout-link="false"></div>'
-				, 'value' => sprintf(
-					'<a
-						href   = "%s"
-						class  = "fbLogin"
-						target = "_blank"
-					>
-						<img src = "/SeanMorris/TheWhtRbt/images/facebook_login.png" style = "width:100%%;">
-					</a><br />
+		$formClass = $this->_getForm('login');
 
-					- OR -
+		$form = new $formClass();
 
-					<br />'
-					, $facebookLoginUrl
-				)
-			];
-			*/
-		}
-
-		$loginForm['username'] = [
-			'_title' => 'username'
-			, 'type' => 'text'
-		];
-
-		$loginForm['password'] = [
-			'_title' => 'password'
-			, 'type' => 'password'
-		];
-
-		$loginForm['submit'] = [
-			'_title' => 'Submit',
-			'type' => 'submit',
-		];
-
-		$form = new \SeanMorris\PressKit\Form\Form($loginForm);
 		$loggedIn = false;
 		$currentUri = $router->request()->uri();
 		$statusCode = 200;
@@ -387,7 +304,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 
 		if($_POST && $form->validate($_POST))
 		{
-			$user = \SeanMorris\Access\User::loadOneByUsername(
+			$user = $this->modelClass::loadOneByUsername(
 				$_POST['username'] ?? NULL
 			);
 			$messages = \SeanMorris\Message\MessageHandler::get();
@@ -434,7 +351,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 
 		if(!$userIdUrl && $user->publicId)
 		{
-			throw new \SeanMorris\Ids\Http\Http303($currentUri . '/' . $user->publicId);
+			throw new \SeanMorris\Ids\Http\Http303($currentUri . '/../' . $user->publicId);
 		}
 
 		$get = $router->request()->get();
@@ -478,7 +395,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 			return FALSE;
 		}
 
-		if(!$user = \SeanMorris\Access\User::loadOneByPublicId($userId))
+		if(!$user = $this->modelClass::loadOneByPublicId($userId))
 		{
 			\SeanMorris\Ids\Log::debug('No user found.');
 			return FALSE;
@@ -666,11 +583,11 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 		$facebookUser = $response->getGraphUser();
 		$facebookId = $facebookUser->getId();
 
-		if(!$user = \SeanMorris\Access\User::loadOneByFacebookId($facebookId))
+		if(!$user = $this->modelClass::loadOneByFacebookId($facebookId))
 		{
-			if(!$user = \SeanMorris\Access\User::loadOneByEmail($facebookUser->getEmail()))
+			if(!$user = $this->modelClass::loadOneByEmail($facebookUser->getEmail()))
 			{
-				$user = new \SeanMorris\Access\User();
+				$user = new $this->modelClass();
 			}
 		}
 

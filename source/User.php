@@ -64,6 +64,7 @@ class User extends \SeanMorris\PressKit\Model
 	public function login($password)
 	{
 		$passwordHasher = new \Hautelook\Phpass\PasswordHash(8, FALSE);
+		
 		return $passwordHasher->CheckPassword($password, $this->password);
 	}
 	/*

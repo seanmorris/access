@@ -14,7 +14,7 @@ class UserState extends \SeanMorris\PressKit\State
 				, 'read' => TRUE
 			]
 			, '$created'	=> [
-				'write'  => [FALSE, 'SeanMorris\Access\Role\Administrator']
+				'write'  => [TRUE, 'SeanMorris\Access\Role\Administrator']
 				, 'read' => TRUE
 			]
 			, '$fbid'   	=> [
@@ -30,15 +30,15 @@ class UserState extends \SeanMorris\PressKit\State
 				, 'read' => [TRUE, 'SeanMorris\Access\Role\Moderator']
 			]
 			, '$password'=> [
-				'write'  => TRUE
+				'write'  => [TRUE, 'SeanMorris\Access\Role\Administrator']
 				, 'read' => FALSE
 			]
 			, '$avatar'	=> [
-				'write'  => TRUE
+				'write'  => [TRUE, 'SeanMorris\Access\Role\Administrator']
 				, 'read' => TRUE
 			]
 			, '$roles'	=> [
-				'write'  => [FALSE, 'SeanMorris\Access\Role\Administrator']
+				'write'  => 'SeanMorris\Access\Role\Administrator'
 				, 'read' => TRUE
 			]
 			, '$state'	=> [
@@ -81,7 +81,7 @@ class UserState extends \SeanMorris\PressKit\State
 				, 'read' => TRUE
 			]
 			, '$roles'	=> [
-				'write'  => [FALSE, 'SeanMorris\Access\Role\Administrator']
+				'write'  => 'SeanMorris\Access\Role\Administrator'
 				, 'read' => TRUE
 			]
 			, '$state'	=> [

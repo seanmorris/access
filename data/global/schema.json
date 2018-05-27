@@ -169,9 +169,9 @@
                         "Field": "role",
                         "Type": "int(11)",
                         "Collation": null,
-                        "Null": "NO",
+                        "Null": "YES",
                         "Key": "",
-                        "Default": "0",
+                        "Default": null,
                         "Extra": "",
                         "Comment": ""
                     },

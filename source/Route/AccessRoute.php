@@ -197,6 +197,8 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 					}
 					catch(\Exception $e)
 					{
+						\SeanMorris\Ids\Log::logException($e);
+						
 						if($e->getCode() == 1062)
 						{
 							$messages->addFlash(new \SeanMorris\Message\ErrorMessage('Username taken.'));
@@ -205,7 +207,6 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 						{
 							$messages->addFlash(new \SeanMorris\Message\ErrorMessage('Unknown error.'));
 
-							\SeanMorris\Ids\Log::logException($e);
 							die;
 						}
 					}

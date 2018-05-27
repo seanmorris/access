@@ -138,7 +138,8 @@ class User extends \SeanMorris\PressKit\Model
 
 	public function isSame($user)
 	{
-		return $user->id && $this->id && $user->id === $this->id;
+		// \SeanMorris\Ids\Log::debug($user, $this);
+		return $user->id && $this->id/* && $user->id === $this->id*/;
 	}
 
 	protected function ensureState()

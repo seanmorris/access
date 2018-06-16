@@ -54,7 +54,6 @@ class User extends \SeanMorris\PressKit\Model
 			, 'where' => [
 				'OR' => [
 					['id'         => '?', '=',    '%s',     'id',      FALSE]
-					, ['id'       => '?', 'LIKE', '%%%s%%', 'keyword', FALSE]
 					, ['username' => '?', 'LIKE', '%%%s%%', 'keyword', FALSE]
 				]
 			]

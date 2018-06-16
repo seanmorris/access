@@ -187,16 +187,23 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 								, $token
 							);
 
-							$mail = new \SeanMorris\Ids\Mail();
-							$mail->to($user->email);
-							$mail->subject('Confirm your email.');
-							$mail->body($confirmUrl);
-							$mail->send();
+							// $mail = new \SeanMorris\Ids\Mail();
+							// $mail->to($user->email);
+							// $mail->subject('Confirm your email.');
+							// $mail->body($confirmUrl);
+							// $mail->send();
 
+							$redirect = $router->path()->pop()->pathString();
+
+							throw new \SeanMorris\Ids\Http\Http303($redirect);
 						}
 					}
 					catch(\Exception $e)
 					{
+						if($e instanceof \SeanMorris\Ids\Http\HttpException)
+						{
+							throw $e;
+						}
 						\SeanMorris\Ids\Log::logException($e);
 						
 						if($e->getCode() == 1062)

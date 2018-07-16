@@ -63,7 +63,7 @@ class User extends \SeanMorris\PressKit\Model
 	public function login($password)
 	{
 		$passwordHasher = new \Hautelook\Phpass\PasswordHash(8, FALSE);
-		
+
 		return $passwordHasher->CheckPassword($password, $this->password);
 	}
 	/*
@@ -141,14 +141,14 @@ class User extends \SeanMorris\PressKit\Model
 		return $user->id && $this->id/* && $user->id === $this->id*/;
 	}
 
-	protected function ensureState()
+	protected function ensureState($force = FALSE)
 	{
 		if(!$this->id)
 		{
 			//return;
 		}
 		
-		$state = parent::ensureState();
+		$state = parent::ensureState($force);
 
 		if($state && !$this->id)
 		{

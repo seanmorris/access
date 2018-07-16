@@ -345,6 +345,10 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 					throw new \SeanMorris\Ids\Http\Http303($redirect);
 				}
 			}
+			else if (!$user)
+			{
+				$messages->addFlash(new \SeanMorris\Message\ErrorMessage('Bad username.'));
+			}
 
 			static::_resetCurrentUser($user);
 				
@@ -383,7 +387,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 				// $resource->meta('form', $form->toStructure());
 
 				$resource->meta('form', $form->toStructure());
-				$resource->body('[]');
+				$resource->body((object)[]);
 
 				echo $resource->encode($get['api']);
 				die;
@@ -700,33 +704,35 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 
 	public function current($router)
 	{
-		throw new \SeanMorris\Ids\Http\Http303(
-			$router->path()->pop()->append('login')->pathString()
-		);
-		// $user = static::_currentUser();
-		// $params = $router->request()->params();
-		// $resource = new \SeanMorris\PressKit\Api\Resource(
-		// 	$router
-		// 	, ['body' => $user->unconsume()]
+		// return static::_currentUser();
+		// throw new \SeanMorris\Ids\Http\Http303(
+		// 	$router->path()->pop()->append('login')->pathString()
 		// );
-		// if(isset($params['api']))
-		// {
-		// 	//\SeanMorris\Ids\Log::debug($resource);
-		// 	if($params['api'] == 'html')
-		// 	{
-		// 		echo $list;
-		// 	}
-		// 	else if($params['api'] == 'xml')
-		// 	{
-		// 		header('Content-Type: application/xml');
-		// 		echo $resource->toXml();
-		// 	}
-		// 	else
-		// 	{
-		// 		header('Content-Type: application/json');
-		// 		echo $resource->toJson();
-		// 	}			
-		// }
+		$user = static::_currentUser();
+		$params = $router->request()->params();
+		$resource = new \SeanMorris\PressKit\Api\Resource(
+			$router
+			, ['body' => $user->unconsume()]
+		);
+		if(isset($params['api']))
+		{
+			//\SeanMorris\Ids\Log::debug($resource);
+			if($params['api'] == 'html')
+			{
+				echo $list;
+			}
+			else if($params['api'] == 'xml')
+			{
+				header('Content-Type: application/xml');
+				echo $resource->toXml();
+			}
+			else
+			{
+				header('Content-Type: application/json');
+				echo $resource->toJson();
+			}			
+			die;
+		}
 
 		// return $user;
 	}

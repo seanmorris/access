@@ -96,6 +96,8 @@ class User extends \SeanMorris\PressKit\Model
 
 	public function hasRole($checkRole)
 	{
+		// \SeanMorris\Ids\Log::debug(__FUNCTION__, $checkRole, $this->id, $checkRole == 'SeanMorris\Access\Role\User');
+
 		static $cache = [];
 
 		if($this->id == 1)
@@ -115,10 +117,7 @@ class User extends \SeanMorris\PressKit\Model
 				return $cache[$this->id][$checkRole];
 			}
 			
-			if(!$roles = $this->roles)
-			{
-				$roles = $this->getSubjects('roles');
-			}
+			$roles = $this->getSubjects('roles', TRUE);
 
 			foreach($roles as $role)
 			{

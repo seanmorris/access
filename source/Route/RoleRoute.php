@@ -54,7 +54,7 @@ class RoleRoute extends \SeanMorris\PressKit\Controller
 				$router
 				, ['body' => $roles]
 			);
-			echo $resource->toJson();
+			echo $resource->encode($params['api']);
 			die;
 		}
 

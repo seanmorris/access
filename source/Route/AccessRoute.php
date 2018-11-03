@@ -14,7 +14,6 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 			, 'current'         => TRUE
 			, 'confirm'         => TRUE
 			, 'view'            => TRUE
-			, 'current'         => TRUE
 			, 'facebookConnect' => TRUE
 			, 'facebookProfile' => TRUE
 			, 'roles'           => TRUE
@@ -712,7 +711,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 		$params = $router->request()->params();
 		$resource = new \SeanMorris\PressKit\Api\Resource(
 			$router
-			, ['body' => $user->unconsume()]
+			, ['body' => $user->unconsume(true)]
 		);
 		if(isset($params['api']))
 		{
@@ -721,16 +720,20 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 			{
 				echo $list;
 			}
-			else if($params['api'] == 'xml')
-			{
-				header('Content-Type: application/xml');
-				echo $resource->toXml();
-			}
 			else
 			{
-				header('Content-Type: application/json');
-				echo $resource->toJson();
-			}			
+				echo $resource->encode($params['api'], 2);
+			}
+			// else if($params['api'] == 'xml')
+			// {
+			// 	header('Content-Type: application/xml');
+			// 	echo $resource->toXml();
+			// }
+			// else
+			// {
+			// 	header('Content-Type: application/json');
+			// 	echo $resource->toJson(2);
+			// }			
 			die;
 		}
 

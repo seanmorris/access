@@ -8,6 +8,7 @@ class Role extends \SeanMorris\PressKit\Model
 		, $publicId
 		, $assigned
 		, $grantedBy
+		, $_titleField = 'class'
 	;
 	protected static
 		$table = 'AccessRole'
@@ -34,5 +35,13 @@ class Role extends \SeanMorris\PressKit\Model
 		return parent::create();
 	}
 
-	
+	public function can($action, $point = NULL)
+	{
+		if($action == 'read')
+		{
+			return true;
+		}
+
+		return parent::can($action, $point);
+	}
 }

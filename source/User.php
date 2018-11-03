@@ -117,7 +117,7 @@ class User extends \SeanMorris\PressKit\Model
 				return $cache[$this->id][$checkRole];
 			}
 			
-			$roles = $this->getSubjects('roles', TRUE);
+			$roles = $this->_getSubjects('roles');
 
 			foreach($roles as $role)
 			{
@@ -156,5 +156,15 @@ class User extends \SeanMorris\PressKit\Model
 		}
 
 		return $state;
+	}
+
+	public function can($action, $point = NULL)
+	{
+		if($action == 'read' && $point == 'password')
+		{
+			return false;
+		}
+
+		return parent::can($action, $point);
 	}
 }

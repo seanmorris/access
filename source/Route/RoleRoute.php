@@ -32,28 +32,41 @@ class RoleRoute extends \SeanMorris\PressKit\Controller
 						return strpos($role, $keyword) !== FALSE;
 					}
 				);
-
-				$roles = array_map(
-					function($role)
-					{
-						return [
-							'title' => $role
-							, 'class' => $role
-						];
-					}
-					, $roles
-				);
 			}
+
+			$roles = array_map(
+				function($role)
+				{
+					return [
+						'title'         => $role
+						, 'class'       => $role
+						, '_titleField' => 'class'
+					];
+				}
+				, $roles
+			);
 
 			$roles = array_values($roles);
 		}
 
+		$form = new \SeanMorris\PressKit\Form\Form([
+			'id' => [
+				'_title' => 'Id'
+				, 'type' => 'hidden'
+			]
+
+			, 'keyword' => [
+				'_title' => 'keyword'
+				, 'type' => 'text'
+			]
+		]);
+
 		if(isset($params['api']))
 		{
 			$resource = new \SeanMorris\PressKit\Api\Resource(
-				$router
-				, ['body' => $roles]
+				$router, ['body'=> $roles]
 			);
+			$resource->meta('form', $form->toStructure());
 			echo $resource->encode($params['api']);
 			die;
 		}

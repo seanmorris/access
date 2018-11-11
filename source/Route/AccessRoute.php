@@ -501,12 +501,19 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 
 		$helper = $facebook->getRedirectLoginHelper();
 
-		$permissions = ['email'];
+		$permissions   = ['email'];
+		$callbackQuery = ['page' => $redirect];
+		$params        = $router->request()->get();
+
+		if($params['api'])
+		{
+			$callbackQuery['api'] = ['api' => 'json'];
+		}
 
 		$callbackUrl = $router->request()->scheme()
 			. $router->request()->host()
-			. '/user/facebookConnect?page='
-			. urlencode($redirect)
+			. '/user/facebookConnect?'
+			. http_build_query($params)
 		;
 
 		return $helper->getLoginUrl($callbackUrl, $permissions);
@@ -521,6 +528,8 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 
 	public function facebookConnect($router)
 	{
+		// var_dump(static::facebookLink($router));die;
+
 		$session     =& \SeanMorris\Ids\Meta::staticSession(1);
 		if(!$facebook = static::facebook())
 		{

@@ -36,6 +36,10 @@ class User extends \SeanMorris\PressKit\Model
 		, $updateColumns = [
 			'publicId' => 'UNHEX(%s)'
 		]
+		, $byId = [
+			'with'  => ['state'   => 'byNull']
+			, 'where' => [['id' => '?']]
+		]
 		, $byPublicId = [
 			'where' => [['publicId' => 'UNHEX(?)']]
 		]

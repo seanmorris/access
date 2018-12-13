@@ -74,7 +74,9 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 			}
 		}
 
-		throw new \SeanMorris\Ids\Http\Http303($router->path()->append('login')->pathString());
+		throw new \SeanMorris\Ids\Http\Http303(
+			$router->path()->append('login')->pathString()
+		);
 	}
 
 	public static function _currentUser(\SeanMorris\Access\User $user = NULL)
@@ -363,7 +365,9 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 
 		if(!$userIdUrl && $user->publicId)
 		{
-			throw new \SeanMorris\Ids\Http\Http303($currentUri . '/../' . $user->publicId);
+			throw new \SeanMorris\Ids\Http\Http303(
+				$router->path()->append($user->publicId)->pathString()
+			);
 		}
 
 		$get = $router->request()->get();
@@ -718,10 +722,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 		// );
 		$user = static::_currentUser();
 		$params = $router->request()->params();
-		$resource = new \SeanMorris\PressKit\Api\Resource(
-			$router
-			, ['body' => $user->unconsume(true)]
-		);
+		
 		if(isset($params['api']))
 		{
 			//\SeanMorris\Ids\Log::debug($resource);
@@ -731,7 +732,10 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 			}
 			else
 			{
-				echo $resource->encode($params['api'], 2);
+				$resource = new \SeanMorris\PressKit\Api\Resource($router);
+				$resource->model($user);
+
+				return $resource;
 			}
 			// else if($params['api'] == 'xml')
 			// {
@@ -742,8 +746,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 			// {
 			// 	header('Content-Type: application/json');
 			// 	echo $resource->toJson(2);
-			// }			
-			die;
+			// }
 		}
 
 		// return $user;

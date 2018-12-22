@@ -93,14 +93,20 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 			$session['user'] = new \SeanMorris\Access\User;
 		}
 
-		if(!static::$userLoaded)
-		{
-			if(isset($session['user']->id))
-			{
-				$session['user'] = \SeanMorris\Access\User::loadOneById($session['user']->id);
-			}
+		$userId = NULL;
 
-			static::$userLoaded = TRUE;
+		if($session['user'])
+		{
+			$userId = $session['user']->unconsume(FALSE, TRUE)['id'];
+		}
+
+		if(!static::$userLoaded && $userId)
+		{
+			if($user = $session['user']::loadOneById($userId))
+			{
+				$session['user'] = $user;
+				static::$userLoaded = TRUE;
+			}
 		}
 
 		return $session['user'];
@@ -143,6 +149,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 		$form = new $formClass();
 
 		$loggedIn = false;
+		$succcess = true;
 
 		$messages = \SeanMorris\Message\MessageHandler::get();
 
@@ -188,11 +195,11 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 								, $token
 							);
 
-							// $mail = new \SeanMorris\Ids\Mail();
-							// $mail->to($user->email);
-							// $mail->subject('Confirm your email.');
-							// $mail->body($confirmUrl);
-							// $mail->send();
+							$mail = new \SeanMorris\Ids\Mail();
+							$mail->to($user->email);
+							$mail->subject('Confirm your email.');
+							$mail->body($confirmUrl);
+							$mail->send(TRUE);
 
 							$redirect = $router->path()->pop()->pathString();
 
@@ -206,6 +213,8 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 							throw $e;
 						}
 						\SeanMorris\Ids\Log::logException($e);
+
+						$succcess = false;
 						
 						if($e->getCode() == 1062)
 						{
@@ -227,6 +236,8 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 			{
 				$messages->addFlash(new \SeanMorris\Message\ErrorMessage($error));
 			}
+
+			$succcess = false;
 		}
 
 		$formTheme = $this->formTheme;
@@ -246,13 +257,16 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 				$resourceClass = $parentController::$resourceClass
 					?? static::$resourceClass;
 
-				$resource = new $resourceClass($router);
+				$resource = new $resourceClass(
+					$router
+					, []
+					, $succcess ? 0 : 1
+				);
 
 				$resource->meta('form', $form->toStructure());
-				$resource->body('[]');
+				$resource->body([]);
 
-				echo $resource->encode($get['api']);
-				die;
+				return $resource;
 			}
 		}
 

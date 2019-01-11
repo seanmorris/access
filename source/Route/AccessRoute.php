@@ -201,7 +201,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 							$mail->body($confirmUrl);
 							$mail->send(TRUE);
 
-							$redirect = $router->path()->pop()->pathString();
+							$redirect = $router->path()->pop()->append('current')->pathString();
 
 							throw new \SeanMorris\Ids\Http\Http303($redirect);
 						}

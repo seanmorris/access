@@ -4,6 +4,18 @@ class RegisterForm extends \SeanMorris\PressKit\Form\Form
 {
 	public function __construct($skeleton = [])
 	{
+		$skeleton += static::skeleton($skeleton);
+
+		$skeleton['submit'] = [
+			'_title' => 'Submit',
+			'type' => 'submit',
+		];
+
+		parent::__construct($skeleton);
+	}
+
+	protected static function skeleton($skeleton = [])
+	{
 		$skeleton['_method'] = 'POST';
 
 		// if($facebookLoginUrl = static::facebookLink($router, 'index'))
@@ -41,6 +53,10 @@ class RegisterForm extends \SeanMorris\PressKit\Form\Form
 		$skeleton['password'] = [
 			'_title' => 'password'
 			, 'type' => 'password'
+			// , '_validators' => [
+			// 	'SeanMorris\Form\Validator\Confirm' =>
+			// 		'Passwords must match.'
+			// ]
 		];
 
 		$skeleton['confirmPassword'] = [
@@ -48,11 +64,6 @@ class RegisterForm extends \SeanMorris\PressKit\Form\Form
 			, 'type' => 'password'
 		];
 
-		$skeleton['submit'] = [
-			'_title' => 'Submit',
-			'type' => 'submit',
-		];
-
-		parent::__construct($skeleton);
+		return $skeleton;
 	}
 }

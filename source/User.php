@@ -162,6 +162,15 @@ class User extends \SeanMorris\PressKit\Model
 		return $state;
 	}
 
+	protected static function afterCreate($instance, &$skeleton)
+	{
+		$state = $instance->getSubject('state');
+
+		$state->addSubject('owner', $instance, true);
+
+		$state->save();
+	}
+
 	public function can($action, $point = NULL)
 	{
 		if($action == 'read' && $point == 'password')

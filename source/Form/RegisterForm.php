@@ -6,11 +6,14 @@ class RegisterForm extends \SeanMorris\PressKit\Form\Form
 	{
 		$skeleton += static::skeleton($skeleton);
 
-		$skeleton['submit'] = [
+		$skeleton['submit'] = $skeleton['submit'] ?? [];
+
+		$skeleton['submit'] += [
 			'_title' => 'Submit',
 			'type' => 'submit',
 		];
 
+		// var_dump($skeleton['submit']);die;
 		parent::__construct($skeleton);
 	}
 
@@ -39,6 +42,10 @@ class RegisterForm extends \SeanMorris\PressKit\Form\Form
 		$skeleton['username'] = [
 			'_title' => 'username'
 			, 'type' => 'text'
+			, '_validators' => [
+				'SeanMorris\Form\Validator\Required' =>
+					'%s is required.'
+			]
 		];
 
 		$skeleton['email'] = [
@@ -47,21 +54,27 @@ class RegisterForm extends \SeanMorris\PressKit\Form\Form
 			, '_validators' => [
 				'SeanMorris\Form\Validator\Email' =>
 					'%s must be a valid email.'
+				, 'SeanMorris\Form\Validator\Required' =>
+					'%s is required.'
 			]
 		];
 
 		$skeleton['password'] = [
 			'_title' => 'password'
 			, 'type' => 'password'
-			// , '_validators' => [
-			// 	'SeanMorris\Form\Validator\Confirm' =>
-			// 		'Passwords must match.'
-			// ]
+			, '_validators' => [
+				'SeanMorris\Form\Validator\Required' => '%s is required.'
+			]
 		];
 
 		$skeleton['confirmPassword'] = [
 			'_title' => 'confirm password'
 			, 'type' => 'password'
+			, '_validators' => [
+				'SeanMorris\Form\Validator\Confirm' => [
+					'password' => 'Passwords must match.'
+				]
+			]
 		];
 
 		return $skeleton;

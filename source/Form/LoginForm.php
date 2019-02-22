@@ -6,6 +6,8 @@ class LoginForm extends \SeanMorris\PressKit\Form\Form
 	{
 		$skeleton['_method'] = 'POST';
 
+		$skeleton += static::skeleton($skeleton);
+
 		// if($facebookLoginUrl = static::facebookLink($router, 'index'))
 		// {
 		// 	$skeleton['facebook'] = [
@@ -28,6 +30,18 @@ class LoginForm extends \SeanMorris\PressKit\Form\Form
 		// 	];
 		// }
 
+		$skeleton['submit'] = $skeleton['submit'] ?? [];
+
+		$skeleton['submit'] += [
+			'_title' => 'Submit',
+			'type' => 'submit',
+		];
+
+		parent::__construct($skeleton);
+	}
+
+	protected static function skeleton($skeleton = [])
+	{
 		$skeleton['username'] = [
 			'_title' => 'username'
 			, 'type' => 'text'
@@ -38,11 +52,6 @@ class LoginForm extends \SeanMorris\PressKit\Form\Form
 			, 'type' => 'password'
 		];
 
-		$skeleton['submit'] = [
-			'_title' => 'Submit',
-			'type' => 'submit',
-		];
-
-		parent::__construct($skeleton);
+		return $skeleton;
 	}
 }

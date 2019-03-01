@@ -2,6 +2,10 @@
 namespace SeanMorris\Access\Route;
 class RoleRoute extends \SeanMorris\PressKit\Controller
 {
+	protected static $forms = [
+		'edit' => 'SeanMorris\Access\Form\RoleForm'
+	];
+
 	public function index($router)
 	{
 		$params = $router->request()->params();
@@ -49,17 +53,7 @@ class RoleRoute extends \SeanMorris\PressKit\Controller
 			$roles = array_values($roles);
 		}
 
-		$form = new \SeanMorris\PressKit\Form\Form([
-			'id' => [
-				'_title' => 'Id'
-				, 'type' => 'hidden'
-			]
-
-			, 'keyword' => [
-				'_title' => 'keyword'
-				, 'type' => 'text'
-			]
-		]);
+		$form = new \SeanMorris\Access\Form\RoleForm;
 
 		if(isset($params['api']))
 		{
@@ -72,35 +66,5 @@ class RoleRoute extends \SeanMorris\PressKit\Controller
 		}
 
 		return sprintf('<pre>%s</pre>', print_r($roles, 1));
-	}
-
-	public function test()
-	{
-		$session = \SeanMorris\Ids\Meta::staticSession(1);
-		$allRoles = \SeanMorris\Ids\Linker::get('roles', TRUE);
-		$lines = [];
-		$user = FALSE;
-
-
-		if(isset($session['user']) && $session['user'])
-		{
-			$user = $session['user'];
-
-			foreach($allRoles as $role)
-			{
-				$lines[] = sprintf(
-					"%s\t%s\t%s<br />"
-					, $user->username
-					, $role
-					, $user->hasRole($role)
-						? 'YES'
-						: 'NO'
-				);
-			}
-		}
-
-		//var_dump($session, $user);
-
-		return "ROLE TEST<br />" . implode($lines);
 	}
 }

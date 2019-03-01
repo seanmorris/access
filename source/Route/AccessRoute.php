@@ -129,10 +129,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 
 	public function _init($router)
 	{
-		if(session_status() === PHP_SESSION_NONE)
-		{
-			session_start();
-		}
+		\SeanMorris\Ids\Meta::staticSession(1);
 		$this->context['user'] = static::_currentUser();
 		parent::_init($router);
 	}
@@ -276,6 +273,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 	public function logout()
 	{
 		session_destroy();
+		session_unset();
 
 		$redirect = $redirectQuery = '';
 

@@ -215,7 +215,22 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 						
 						if($e->getCode() == 1062)
 						{
-							$messages->addFlash(new \SeanMorris\Message\ErrorMessage('Username taken.'));
+							if(preg_match('/.+\'(.+?)\'.*?$/', $e->getMessage(), $groups))
+							{
+								switch($groups[1])
+								{
+									case 'email':
+										$messages->addFlash(new \SeanMorris\Message\ErrorMessage('Email address already registered.'));
+										break;
+									case 'username':
+										$messages->addFlash(new \SeanMorris\Message\ErrorMessage('Username taken.'));
+										break;
+									default:
+										$messages->addFlash(new \SeanMorris\Message\ErrorMessage('Unknown error.'));
+										break;
+								}
+							}
+
 						}
 						else
 						{

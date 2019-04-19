@@ -419,8 +419,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 				$resource->meta('form', $form->toStructure());
 				$resource->body((object)[]);
 
-				echo $resource->encode($get['api']);
-				die;
+				return $resource;
 			}
 		}
 

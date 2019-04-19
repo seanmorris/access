@@ -543,7 +543,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 		$callbackUrl = $router->request()->scheme()
 			. $router->request()->host()
 			. '/user/facebookConnect?'
-			. http_build_query($params)
+			. http_build_query($callbackQuery)
 		;
 
 		return $helper->getLoginUrl($callbackUrl, $permissions);

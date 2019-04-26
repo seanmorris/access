@@ -20,7 +20,8 @@ class RoleRoute extends \SeanMorris\PressKit\Controller
 		}
 		else
 		{
-			$roles = \SeanMorris\Ids\Linker::get('roles', TRUE);
+			$rootPackage = \SeanMorris\Ids\Package::getRoot();
+			$roles  = $rootPackage->getVar('linker:inheritance:SeanMorris\Access\Role', []);
 
 			if(isset($params['keyword']))
 			{

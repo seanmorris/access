@@ -145,8 +145,9 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 
 		$form = new $formClass();
 
-		$loggedIn = false;
-		$succcess = true;
+		$loggedIn = FALSE;
+		$succcess = TRUE;
+		$user     = NULL;
 
 		$messages = \SeanMorris\Message\MessageHandler::get();
 
@@ -173,9 +174,12 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 
 					try
 					{
-						if($user->save())
+						$user->save();
+
+						if($user->id)
 						{
 							static::_currentUser($user);
+
 							$messages->addFlash(new \SeanMorris\Message\SuccessMessage('Registration successful.'));
 
 							$token = \SeanMorris\Ids\HashToken::getToken(
@@ -199,17 +203,21 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 							$mail->send(TRUE);
 
 							$redirect = $router->path()->pop()->append('current')->pathString();
-
 							throw new \SeanMorris\Ids\Http\Http303($redirect);
+						}
+						else
+						{
+							$messages->addFlash(new \SeanMorris\Message\ErrorMessage('Unknown error.'));
 						}
 					}
 					catch(\Exception $e)
 					{
+						\SeanMorris\Ids\Log::logException($e);
+
 						if($e instanceof \SeanMorris\Ids\Http\HttpException)
 						{
 							throw $e;
 						}
-						\SeanMorris\Ids\Log::logException($e);
 
 						$succcess = false;
 						
@@ -277,6 +285,11 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 
 				$resource->meta('form', $form->toStructure());
 				$resource->body([]);
+
+				if($user)
+				{
+					$resource->model($user);
+				}
 
 				return $resource;
 			}

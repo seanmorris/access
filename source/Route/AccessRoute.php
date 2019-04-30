@@ -180,6 +180,14 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 						{
 							static::_currentUser($user);
 
+							$userRole = '\SeanMorris\Access\Role\User';
+
+							$role = new $userRole();
+							$role->save();
+
+							$user->addSubject('roles', $role, TRUE);
+							$user->forceSave();
+
 							$messages->addFlash(new \SeanMorris\Message\SuccessMessage('Registration successful.'));
 
 							$token = \SeanMorris\Ids\HashToken::getToken(

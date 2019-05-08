@@ -670,9 +670,17 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 		}
 		else
 		{
+			$facebookName = $facebookUser->getName();
+			$username     = $facebookName;
+
+			while($user = $this->modelClass::loadOneByFacebookId($username))
+			{
+				$user = new $this->modelClass();
+			}
+
 			$user->consume([
 				'facebookId'   => $facebookId
-				, 'username'   => $facebookUser->getName()
+				, 'username'   => $username
 				, 'email'      => $facebookUser->getEmail()
 			], TRUE);
 		}

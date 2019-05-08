@@ -654,13 +654,20 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 		
 		$response = $facebook->get('/me?fields=id,name,email', $session['facebookAccessToken']);
 		$facebookUser = $response->getGraphUser();
-		$facebookId = $facebookUser->getId();
+		$facebookId   = $facebookUser->getId();
+		$facebookName = $facebookUser->getName();
+		$username     = $facebookName;
 
 		if(!$user = $this->modelClass::loadOneByFacebookId($facebookId))
 		{
 			if(!$user = $this->modelClass::loadOneByEmail($facebookUser->getEmail()))
 			{
 				$user = new $this->modelClass();
+			}
+
+			while($existingUser = $this->modelClass::loadOneByUsername($username))
+			{
+				$username = $facebookName . '.' . rand();
 			}
 		}
 
@@ -670,14 +677,6 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 		}
 		else
 		{
-			$facebookName = $facebookUser->getName();
-			$username     = $facebookName;
-
-			while($user = $this->modelClass::loadOneByUsername($username))
-			{
-				$username = $facebookName . '.' . rand();
-			}
-
 			if(!$user)
 			{
 				$user = new $this->modelClass();

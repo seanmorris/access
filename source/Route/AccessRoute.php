@@ -675,6 +675,11 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 
 			while($user = $this->modelClass::loadOneByFacebookId($username))
 			{
+				$username = $facebookName . '.' . rand();
+			}
+
+			if(!$user)
+			{
 				$user = new $this->modelClass();
 			}
 

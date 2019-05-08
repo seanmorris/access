@@ -662,19 +662,19 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 		{
 			if(!$user = $this->modelClass::loadOneByEmail($facebookUser->getEmail()))
 			{
-				$user = new $this->modelClass();
-			}
-
-			while($existingUser = $this->modelClass::loadOneByUsername($username))
-			{
-				$existingData = $existingUser->unconsume(TRUE);
-
-				if($existingData['facebookId'] === $facebookId)
+				while($existingUser = $this->modelClass::loadOneByUsername($username))
 				{
-					break;
+					$existingData = $existingUser->unconsume(TRUE);
+
+					if($existingData['facebookId'] == $facebookId)
+					{
+						break;
+					}
+
+					$username = $facebookName . '.' . rand();
 				}
 
-				$username = $facebookName . '.' . rand();
+				$user = new $this->modelClass();
 			}
 		}
 

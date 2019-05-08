@@ -667,6 +667,13 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 
 			while($existingUser = $this->modelClass::loadOneByUsername($username))
 			{
+				$existingData = $existingUser->unconsume(TRUE);
+
+				if($existingData['facebookId'] === $facebookId)
+				{
+					break;
+				}
+
 				$username = $facebookName . '.' . rand();
 			}
 		}

@@ -685,7 +685,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 			$user->consume([
 				'facebookId'   => $facebookId
 				, 'username'   => $username
-				, 'email'      => $facebookUser->getEmail()
+				, 'email'      => '' //$facebookUser->getEmail()
 			], TRUE);
 		}
 

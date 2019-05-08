@@ -673,7 +673,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 			$facebookName = $facebookUser->getName();
 			$username     = $facebookName;
 
-			while($user = $this->modelClass::loadOneByFacebookId($username))
+			while($user = $this->modelClass::loadOneByUsername($username))
 			{
 				$username = $facebookName . '.' . rand();
 			}

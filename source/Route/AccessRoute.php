@@ -690,7 +690,9 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 				'facebookId'  => $facebookId
 				, 'username'  => $username
 				, 'email'     => $facebookUser->getEmail()
-				, 'birthdate' => $birthday->format('Y-m-d')
+				, 'birthdate' => $birthday
+					? $birthday->format('Y-m-d')
+					: '1970-01-01'
 			], TRUE);
 		}
 

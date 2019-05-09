@@ -652,10 +652,12 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 
 		$messages = \SeanMorris\Message\MessageHandler::get();
 		
-		$response = $facebook->get('/me?fields=id,name,email', $session['facebookAccessToken']);
+		$response = $facebook->get('/me?fields=id,name,email,birthday', $session['facebookAccessToken']);
 		$facebookUser = $response->getGraphUser();
 		$facebookId   = $facebookUser->getId();
 		$facebookName = $facebookUser->getName();
+		$birthday     = $facebookUser->getBirthday();
+
 		$username     = $facebookName;
 
 		if(!$user = $this->modelClass::loadOneByFacebookId($facebookId))
@@ -685,9 +687,10 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 		else
 		{
 			$user->consume([
-				'facebookId'   => $facebookId
-				, 'username'   => $username
-				, 'email'      => $facebookUser->getEmail()
+				'facebookId'  => $facebookId
+				, 'username'  => $username
+				, 'email'     => $facebookUser->getEmail()
+				, 'birthdate' => $birthday->format('Y-m-d')
 			], TRUE);
 		}
 

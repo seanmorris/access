@@ -269,6 +269,40 @@
                     }
                 }
             }
+        },
+        "1": {
+            "AccessUser": {
+                "fields": {
+                    "facebookId": {
+                        "Field": "facebookId",
+                        "Type": "varchar(255)",
+                        "Collation": "latin1_swedish_ci",
+                        "Null": "YES",
+                        "Key": "MUL",
+                        "Default": null,
+                        "Extra": "",
+                        "Comment": ""
+                    }
+                },
+                "keys": {
+                    "facebookId": {
+                        "1": {
+                            "Table": "AccessUser",
+                            "Non_unique": "1",
+                            "Key_name": "facebookId",
+                            "Seq_in_index": "1",
+                            "Column_name": "facebookId",
+                            "Collation": "A",
+                            "Sub_part": null,
+                            "Packed": null,
+                            "Null": "YES",
+                            "Index_type": "BTREE",
+                            "Comment": "",
+                            "Index_comment": ""
+                        }
+                    }
+                }
+            }
         }
     }
 }

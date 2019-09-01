@@ -39,6 +39,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 	;
 	protected static
 		$titleField = 'username'
+		, $resourceClass = 'SeanMorris\PressKit\Api\Resource'
 		, $modelRoute = 'SeanMorris\PressKit\Route\ModelSubRoute'
 		, $sessionStarted = FALSE
 		, $userLoaded = FALSE
@@ -799,7 +800,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 			}
 			else
 			{
-				$resource = new \SeanMorris\PressKit\Api\Resource($router);
+				$resource = new static::$resourceClass($router);
 				$resource->model($user);
 
 				return $resource;

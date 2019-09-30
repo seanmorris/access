@@ -212,7 +212,13 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 							$mail->send(TRUE);
 
 							$redirect = $router->path()->pop()->append('current')->pathString();
-							throw new \SeanMorris\Ids\Http\Http303($redirect);
+
+							$get = $router->request()->get();
+
+							if(!isset($get['api']))
+							{
+								throw new \SeanMorris\Ids\Http\Http303($redirect);
+							}
 						}
 						else
 						{

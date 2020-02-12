@@ -55,7 +55,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 					'_link'		=> 'login'
 					, '_weight' => 100
 					, '_attrs' => ['data-no-instant' => 'data-no-instant']
-				]	
+				]
 				, 'Register' => [
 					'_link'		=> 'register'
 					, '_weight' => 101
@@ -235,7 +235,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 						}
 
 						$succcess = false;
-						
+
 						if($e->getCode() == 1062)
 						{
 							if(preg_match('/.+\'(.+?)\'.*?$/', $e->getMessage(), $groups))
@@ -328,7 +328,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 			$redirect      = parse_url($_GET['page'], PHP_URL_PATH);
 			$redirectQuery = parse_url($_GET['page'], PHP_URL_QUERY);
 		}
-		
+
 		if($redirectQuery) {
 			$redirect .= '?' . $redirectQuery;
 		}
@@ -407,7 +407,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 			}
 
 			static::_resetCurrentUser($user);
-				
+
 			$messages->addFlash(new \SeanMorris\Message\ErrorMessage('Bad username/password.'));
 
 			$success    = false;
@@ -452,7 +452,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 		}
 
 		$formTheme = $this->formTheme;
-		
+
 		return new \SeanMorris\Ids\Http\HttpResponse($form->render($formTheme), $statusCode);
 	}
 
@@ -658,7 +658,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 		$session['facebookAccessToken'] = (string) $accessToken;
 
 		$messages = \SeanMorris\Message\MessageHandler::get();
-		
+
 		$response = $facebook->get('/me?fields=id,name,email,birthday', $session['facebookAccessToken']);
 		$facebookUser  = $response->getGraphUser();
 		$facebookId    = $facebookUser->getId();
@@ -790,39 +790,53 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 
 	public function current($router)
 	{
+		if($user = static::_currentUser())
+		{
+			$path = $router->path()->getSpentPath()->append(
+				$user->publicId, ...$router->path()->consumeNodes()
+			);
+
+			$request = new \SeanMorris\Ids\Request([
+				'path' => $path
+			]);
+
+			return $router->resumeRouting($this, $request);
+		}
+
+		return FALSE;
 		// return static::_currentUser();
 		// throw new \SeanMorris\Ids\Http\Http303(
 		// 	$router->path()->pop()->append('login')->pathString()
 		// );
-		$user = static::_currentUser();
-		$params = $router->request()->params();
-		
-		if(isset($params['api']))
-		{
-			//\SeanMorris\Ids\Log::debug($resource);
-			if($params['api'] == 'html')
-			{
-				echo $list;
-			}
-			else
-			{
-				$resource = new static::$resourceClass($router);
-				$resource->model($user);
+		// $user = static::_currentUser();
+		// $params = $router->request()->params();
 
-				return $resource;
-			}
-			// else if($params['api'] == 'xml')
-			// {
-			// 	header('Content-Type: application/xml');
-			// 	echo $resource->toXml();
-			// }
-			// else
-			// {
-			// 	header('Content-Type: application/json');
-			// 	echo $resource->toJson(2);
-			// }
-		}
+		// if(isset($params['api']))
+		// {
+		// 	//\SeanMorris\Ids\Log::debug($resource);
+		// 	if($params['api'] == 'html')
+		// 	{
+		// 		echo $list;
+		// 	}
+		// 	else
+		// 	{
+		// 		$resource = new static::$resourceClass($router);
+		// 		$resource->model($user);
 
-		// return $user;
+		// 		return $resource;
+		// 	}
+		// 	// else if($params['api'] == 'xml')
+		// 	// {
+		// 	// 	header('Content-Type: application/xml');
+		// 	// 	echo $resource->toXml();
+		// 	// }
+		// 	// else
+		// 	// {
+		// 	// 	header('Content-Type: application/json');
+		// 	// 	echo $resource->toJson(2);
+		// 	// }
+		// }
+
+		// // return $user;
 	}
 }

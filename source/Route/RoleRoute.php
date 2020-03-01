@@ -21,14 +21,15 @@ class RoleRoute extends \SeanMorris\PressKit\Controller
 		else
 		{
 			$rootPackage = \SeanMorris\Ids\Package::getRoot();
-			$roles  = $rootPackage->getVar('linker:inheritance:SeanMorris\Access\Role', []);
+
+			$roles = \SeanMorris\Ids\Linker::classes(\SeanMorris\Access\Role::class);
 
 			if(isset($params['keyword']))
 			{
 				$keyword = $params['keyword'];
 
 				$roles = array_filter(
-					$roles
+					$roles ?: []
 					, function($role) use($keyword)
 					{
 						$role = strtolower($role);
@@ -48,7 +49,7 @@ class RoleRoute extends \SeanMorris\PressKit\Controller
 						, '_titleField' => 'class'
 					];
 				}
-				, $roles
+				, $roles ?: []
 			);
 
 			$roles = array_values($roles);
@@ -62,8 +63,7 @@ class RoleRoute extends \SeanMorris\PressKit\Controller
 				$router, ['body'=> $roles]
 			);
 			$resource->meta('form', $form->toStructure());
-			echo $resource->encode($params['api']);
-			die;
+			return $resource;
 		}
 
 		return sprintf('<pre>%s</pre>', print_r($roles, 1));

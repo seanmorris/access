@@ -103,9 +103,13 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 
 		if(!static::$userLoaded && $userId)
 		{
+			static::$userLoaded = TRUE;
 			if($user = $session['user']::loadOneById($userId))
 			{
-				$session['user']    = $user;
+				$session['user'] = $user;
+			}
+			else
+			{
 				static::$userLoaded = TRUE;
 			}
 		}

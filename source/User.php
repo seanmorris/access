@@ -113,12 +113,12 @@ class User extends \SeanMorris\PressKit\Model
 
 		if($this->id == 1)
 		{
-			return true;
+			return TRUE;
 		}
 
 		if($this->id && $checkRole == 'SeanMorris\Access\Role\User')
 		{
-			return true;	
+			return TRUE;
 		}
 
 		if($this->id)
@@ -127,7 +127,7 @@ class User extends \SeanMorris\PressKit\Model
 			{
 				return $cache[$this->id][$checkRole];
 			}
-			
+
 			$roles = $this->_getSubjects('roles');
 
 			foreach($roles as $role)
@@ -157,7 +157,7 @@ class User extends \SeanMorris\PressKit\Model
 		{
 			//return;
 		}
-		
+
 		$state = parent::ensureState($force);
 
 		if($state && !$this->id)

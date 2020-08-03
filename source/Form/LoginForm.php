@@ -34,6 +34,7 @@ class LoginForm extends \SeanMorris\PressKit\Form\Form
 
 		$skeleton['submit'] += [
 			'_title' => 'Submit',
+			'value' => 'Submit',
 			'type' => 'submit',
 		];
 

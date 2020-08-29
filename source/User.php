@@ -111,6 +111,11 @@ class User extends \SeanMorris\PressKit\Model
 
 		static $cache = [];
 
+		if(!$this->id)
+		{
+			return false;
+		}
+
 		if($this->id == 1)
 		{
 			return TRUE;

@@ -178,7 +178,7 @@ class User extends \SeanMorris\PressKit\Model
 	{
 		$state = $instance->getSubject('state');
 
-		$state->addSubject('owner', $instance, true);
+		$state->addSubject('owner', $instance);
 
 		$state->save();
 	}

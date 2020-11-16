@@ -166,7 +166,8 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 			}
 			else
 			{
-				$user = new $this->modelClass;
+				$modelClass = $this->modelClass;
+				$user = new $modelClass;
 				// $user = static::_currentUser();
 
 				if($user->id)
@@ -231,16 +232,16 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 					}
 					catch(\Exception $e)
 					{
-						\SeanMorris\Ids\Log::logException($e);
-
 						if($e instanceof \SeanMorris\Ids\Http\HttpException)
 						{
 							throw $e;
 						}
 
+						\SeanMorris\Ids\Log::logException($e);
+
 						$succcess = false;
 
-						if($e->getCode() == 1062)
+						if($e->getCode() == 23000)
 						{
 							if(preg_match('/.+\'(.+?)\'.*?$/', $e->getMessage(), $groups))
 							{

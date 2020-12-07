@@ -86,27 +86,27 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 
 		if($user)
 		{
-			$session['user'] = $user;
+			$session->user = $user;
 		}
 
-		if(!isset($session['user']))
+		if(!isset($session->user))
 		{
-			$session['user'] = new \SeanMorris\Access\User;
+			$session->user = new \SeanMorris\Access\User;
 		}
 
 		$userId = NULL;
 
-		if($session['user'])
+		if($session->user)
 		{
-			$userId = $session['user']->unconsume(FALSE, TRUE)['id'];
+			$userId = $session->user->unconsume(FALSE, TRUE)['id'];
 		}
 
 		if(!static::$userLoaded && $userId)
 		{
 			static::$userLoaded = TRUE;
-			if($user = $session['user']::loadOneById($userId))
+			if($user = $session->user::loadOneById($userId))
 			{
-				$session['user'] = $user;
+				$session->user = $user;
 			}
 			else
 			{
@@ -114,7 +114,7 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 			}
 		}
 
-		return $session['user'];
+		return $session->user;
 	}
 
 	public static function _resetCurrentUser()
@@ -122,12 +122,12 @@ class AccessRoute extends \SeanMorris\PressKit\Controller
 		$user = NULL;
 		$session =& \SeanMorris\Ids\Meta::staticSession(1);
 
-		if(isset($session['user']))
+		if(isset($session->user))
 		{
-			$user = $session['user'];
+			$user = $session->user;
 		}
 
-		unset($session['user']);
+		unset($session->user);
 
 		return static::_currentUser();
 	}
